@@ -63,6 +63,8 @@ export const ProfilePage: React.FC = () => {
     intelligence: { name: 'Intelligence', desc: 'Raises max mana reserves, spell casting potency and cooldown recovery.' },
     endurance: { name: 'Endurance', desc: 'Enhances body fortitude, raw health limits and defense ratings.' },
     mana: { name: 'Mana Control', desc: 'Accelerates passive mana restoration rates and reduces fatigue.' },
+    focus: { name: 'Focus', desc: 'Increases mental stamina, precision, and skill activation rates.' },
+    discipline: { name: 'Discipline', desc: 'Reduces fatigue accumulation and increases attributes growth factors.' },
   }
 
   return (

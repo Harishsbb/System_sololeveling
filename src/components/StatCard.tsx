@@ -1,13 +1,13 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Shield, Activity, Zap, Cpu, Flame } from 'lucide-react'
+import { Plus, Shield, Activity, Zap, Cpu, Flame, Target, Award } from 'lucide-react'
 import { useGameStore } from '../store/gameStore'
 import { useSound } from '../hooks/useSound'
 
 interface StatCardProps {
   name: string
   value: number
-  statKey: 'strength' | 'agility' | 'intelligence' | 'endurance' | 'mana'
+  statKey: 'strength' | 'agility' | 'intelligence' | 'endurance' | 'mana' | 'focus' | 'discipline'
   description: string
   canUpgrade: boolean
 }
@@ -34,6 +34,10 @@ export const StatCard: React.FC<StatCardProps> = ({
         return <Shield className="w-5 h-5 text-emerald-500" />
       case 'mana':
         return <Activity className="w-5 h-5 text-hunter-purple" />
+      case 'focus':
+        return <Target className="w-5 h-5 text-sky-400" />
+      case 'discipline':
+        return <Award className="w-5 h-5 text-indigo-400" />
       default:
         return <Activity className="w-5 h-5 text-slate-400" />
     }
@@ -46,6 +50,8 @@ export const StatCard: React.FC<StatCardProps> = ({
       case 'intelligence': return 'hover:border-hunter-blue/40 hover:shadow-[0_0_15px_rgba(0,240,255,0.15)]'
       case 'endurance': return 'hover:border-emerald-500/40 hover:shadow-[0_0_15px_rgba(16,185,129,0.15)]'
       case 'mana': return 'hover:border-hunter-purple/40 hover:shadow-[0_0_15px_rgba(157,78,221,0.15)]'
+      case 'focus': return 'hover:border-sky-400/40 hover:shadow-[0_0_15px_rgba(56,189,248,0.15)]'
+      case 'discipline': return 'hover:border-indigo-400/40 hover:shadow-[0_0_15px_rgba(129,140,248,0.15)]'
       default: return 'hover:border-slate-500/40 hover:shadow-[0_0_15px_rgba(100,116,139,0.15)]'
     }
   }

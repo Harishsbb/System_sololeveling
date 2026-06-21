@@ -142,6 +142,7 @@ export const QuestPage: React.FC = () => {
                   <li>Squats: 50</li>
                   <li>Walking: 8000 Steps</li>
                   <li>Plank: 3 Minutes</li>
+                  <li>Meditation: 10 Minutes</li>
                 </ul>
               </div>
 
@@ -161,6 +162,7 @@ export const QuestPage: React.FC = () => {
                   <li>Squats: 80</li>
                   <li>Walking: 10000 Steps</li>
                   <li>Plank: 5 Minutes</li>
+                  <li>Meditation: 15 Minutes</li>
                 </ul>
               </div>
 
@@ -180,6 +182,7 @@ export const QuestPage: React.FC = () => {
                   <li>Squats: 100</li>
                   <li>Running: 5 KM</li>
                   <li>Plank: 10 Minutes</li>
+                  <li>Meditation: 20 Minutes</li>
                 </ul>
               </div>
             </div>

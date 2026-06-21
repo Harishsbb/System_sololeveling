@@ -10,7 +10,9 @@
     "agility": 10,
     "intelligence": 10,
     "endurance": 10,
-    "mana": 10
+    "mana": 10,
+    "focus": 10,
+    "discipline": 10
   },
   "statPoints": 5,
   "gold": 500

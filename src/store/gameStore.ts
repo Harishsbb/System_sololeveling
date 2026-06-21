@@ -9,6 +9,8 @@ export interface Stats {
   intelligence: number
   endurance: number
   mana: number
+  focus: number
+  discipline: number
 }
 
 export interface Player {
@@ -133,7 +135,8 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
       { id: 'pushups', name: 'Push-ups', target: 30 },
       { id: 'squats', name: 'Squats', target: 50 },
       { id: 'walking', name: 'Walking (Steps)', target: 8000 },
-      { id: 'plank', name: 'Plank (Minutes)', target: 3 }
+      { id: 'plank', name: 'Plank (Minutes)', target: 3 },
+      { id: 'meditation', name: 'Meditation (Minutes)', target: 10 }
     ]
     rewards = { xp: 150, statPoints: 4, gold: 200, box: "Random Loot Box" }
   } else if (dayCount <= 60) {
@@ -142,7 +145,8 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
       { id: 'pushups', name: 'Push-ups', target: 60 },
       { id: 'squats', name: 'Squats', target: 80 },
       { id: 'walking', name: 'Walking (Steps)', target: 10000 },
-      { id: 'plank', name: 'Plank (Minutes)', target: 5 }
+      { id: 'plank', name: 'Plank (Minutes)', target: 5 },
+      { id: 'meditation', name: 'Meditation (Minutes)', target: 15 }
     ]
     rewards = { xp: 300, statPoints: 6, gold: 400, box: "Elixir of Life" }
   } else {
@@ -151,7 +155,8 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
       { id: 'pushups', name: 'Push-ups', target: 100 },
       { id: 'squats', name: 'Squats', target: 100 },
       { id: 'running', name: 'Running (KM)', target: 5 },
-      { id: 'plank', name: 'Plank (Minutes)', target: 10 }
+      { id: 'plank', name: 'Plank (Minutes)', target: 10 },
+      { id: 'meditation', name: 'Meditation (Minutes)', target: 20 }
     ]
     rewards = { xp: 500, statPoints: 10, gold: 800, box: "Monarch Chest" }
   }
@@ -287,6 +292,10 @@ export const useGameStore = create<GameState>((set, get) => ({
   soundEnabled: getSavedState('sl_sound_enabled', true),
   player: (() => {
     const saved = getSavedState('sl_player', defaultHunters as Player)
+    if (saved && saved.stats) {
+      if (saved.stats.focus === undefined) saved.stats.focus = 10
+      if (saved.stats.discipline === undefined) saved.stats.discipline = 10
+    }
     if (saved.name !== defaultHunters.name) {
       saved.name = defaultHunters.name
       localStorage.setItem('sl_player', JSON.stringify(saved))
@@ -387,6 +396,13 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   updateQuestProgress: (taskId, currentVal) => set((state) => {
+    let focusIncremented = false
+    const dailyQuest = state.quests.find(q => q.type === 'daily')
+    const meditationTask = dailyQuest?.tasks.find(t => t.id === 'meditation')
+    if (taskId === 'meditation' && meditationTask && currentVal >= meditationTask.target && meditationTask.current < meditationTask.target) {
+      focusIncremented = true
+    }
+
     const updatedQuests = state.quests.map((q) => {
       if (q.status !== 'active') return q
 
@@ -409,8 +425,21 @@ export const useGameStore = create<GameState>((set, get) => ({
     const wasCompleted = state.quests.some(q => q.status === 'active') &&
       updatedQuests.some(q => q.status === 'completed')
 
+    let player = state.player
+    if (focusIncremented) {
+      player = {
+        ...state.player,
+        stats: {
+          ...state.player.stats,
+          focus: state.player.stats.focus + 1
+        }
+      }
+      localStorage.setItem('sl_player', JSON.stringify(player))
+    }
+
     localStorage.setItem('sl_quests', JSON.stringify(updatedQuests))
     return {
+      player,
       quests: updatedQuests,
       questCompleteNotification: wasCompleted ? "Daily Training Regimen Completed! Arise to claim rewards." : state.questCompleteNotification
     }

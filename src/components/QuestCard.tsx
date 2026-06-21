@@ -16,9 +16,14 @@ export const QuestCard: React.FC<QuestCardProps> = ({ quest }) => {
   
   const { playClick, playQuestComplete } = useSound()
 
+  const [completedMeditationAura, setCompletedMeditationAura] = React.useState(false)
+
   const handleIncrement = (task: Task, amount: number) => {
     playClick()
     const newValue = task.current + amount
+    if (task.id === 'meditation' && newValue >= task.target && task.current < task.target) {
+      setCompletedMeditationAura(true)
+    }
     updateQuestProgress(task.id, newValue)
   }
 
@@ -130,12 +135,29 @@ export const QuestCard: React.FC<QuestCardProps> = ({ quest }) => {
                 return (
                   <div 
                     key={task.id}
-                    className={`p-4 rounded border transition-all duration-300 ${
+                    className={`p-4 rounded border transition-all duration-300 relative overflow-hidden ${
                       isTaskDone 
                         ? 'border-emerald-500/20 bg-emerald-950/5' 
                         : 'border-slate-800 bg-slate-950/30'
                     }`}
                   >
+                    {/* Aura Animation Overlay */}
+                    {task.id === 'meditation' && completedMeditationAura && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 0.5, 0.5, 0] }}
+                        transition={{ duration: 4.5, times: [0, 0.15, 0.85, 1] }}
+                        onAnimationComplete={() => setCompletedMeditationAura(false)}
+                        className="absolute inset-0 bg-sky-500/10 border-2 border-sky-400 pointer-events-none rounded shadow-[inset_0_0_35px_rgba(56,189,248,0.5)] z-20 overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-t from-sky-400/20 via-blue-500/10 to-transparent animate-pulse" />
+                        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-sky-300/15 rounded-full blur-2xl animate-ping" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-display font-black text-sky-300 uppercase tracking-widest bg-slate-950/90 border border-sky-500/40 px-2 py-0.5 rounded shadow-[0_0_10px_rgba(56,189,248,0.3)] animate-pulse">
+                          +1 Focus Gained
+                        </div>
+                      </motion.div>
+                    )}
+
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
                         {isTaskDone ? (
@@ -157,6 +179,7 @@ export const QuestCard: React.FC<QuestCardProps> = ({ quest }) => {
                                 {(task.target - task.current).toFixed(task.id === 'running' || task.id === 'plank' ? 1 : 0)} {
                                   task.id === 'walking' ? 'STEPS' :
                                   task.id === 'plank' ? 'MIN' :
+                                  task.id === 'meditation' ? 'MIN' :
                                   task.id === 'running' ? 'KM' : 'REPS'
                                 } REMAINING
                               </span>
@@ -204,6 +227,11 @@ export const QuestCard: React.FC<QuestCardProps> = ({ quest }) => {
                               { value: 0.5, label: '+0.5' },
                               { value: 1.0, label: '+1.0' }
                             ]
+                          } else if (task.id === 'meditation') {
+                            increments = [
+                              { value: 2, label: '+2m' },
+                              { value: 5, label: '+5m' }
+                            ]
                           }
 
                           return increments.map((inc, i) => (
@@ -218,7 +246,13 @@ export const QuestCard: React.FC<QuestCardProps> = ({ quest }) => {
                           ))
                         })()}
                         <button
-                          onClick={() => updateQuestProgress(task.id, task.target)}
+                          onClick={() => {
+                            playClick()
+                            if (task.id === 'meditation' && task.current < task.target) {
+                              setCompletedMeditationAura(true)
+                            }
+                            updateQuestProgress(task.id, task.target)
+                          }}
                           className="ml-auto px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 text-xs font-display cursor-pointer transition-all"
                         >
                           Complete
