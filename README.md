@@ -1,6 +1,8 @@
 # 🌌 HUNTER SYSTEM : SHADOW MONARCH REGIMEN
 > **"Arise."** — The ultimate fitness progression system inspired by Solo Leveling.
 
+![Hunter System Showcase](./public/hunter_system_showcase.png)
+
 ---
 
 ## ⚡ SYSTEM STATUS HUD
@@ -20,8 +22,6 @@ The UI is designed to mimic the holographic dashboard of the **Solo Leveling** s
 - **Futuristic HUD Panel**: Complete with glassmorphic panels, glowing cyber blue border accents, and dynamic game-like warning indicators.
 - **Cinematic Hero**: Autoplay looped dark fantasy background video layered with ambient vignette overlays.
 - **Dimensional Portal**: A dynamic portal interface for training dungeon compliance logging.
-
-![Hunter System Showcase](./public/hunter_system_showcase.png)
 
 ---
 
