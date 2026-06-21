@@ -643,7 +643,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 }))
 
 // --- MongoDB Sync Middleware / Subscription ---
-const BACKEND_URL = 'http://localhost:5000/api/state';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/state';
 
 // Load initial state from MongoDB
 export const syncFromDatabase = async () => {
