@@ -347,6 +347,7 @@ interface GameState {
   toggleJavaTopic: (topicId: string) => void
   claimDevQuestRewards: () => void
   checkDevDailyReset: () => void
+  resetSystem: () => Promise<void>
 }
 
 // Load initial state from localstorage or use defaults
@@ -1166,7 +1167,44 @@ export const useGameStore = create<GameState>((set, get) => ({
       localStorage.setItem('sl_dev_last_date', todayStr)
     }
     return {}
-  })
+  }),
+
+  resetSystem: async () => {
+    const defaultPlayer: Player = {
+      ...(defaultHunters as Player),
+      stats: {
+        ...(defaultHunters as Player).stats,
+        focus: 10,
+        discipline: 10,
+        health: 100,
+        recovery: 10,
+        energy: 100,
+        problemSolving: 10,
+        communication: 10,
+      },
+      nutrition: defaultNutrition,
+      developer: defaultDeveloper,
+    }
+
+    set({
+      player: defaultPlayer,
+      skills: defaultSkills as SkillNodeData[],
+      quests: [getQuestForDayCount(getCurrentDayCount())],
+      dungeons: defaultDungeons as Dungeon[],
+      shadows: defaultShadows,
+    })
+
+    localStorage.removeItem('sl_player')
+    localStorage.removeItem('sl_skills')
+    localStorage.removeItem('sl_quests')
+    localStorage.removeItem('sl_dungeons')
+    localStorage.removeItem('sl_shadows')
+    localStorage.removeItem('sl_sound_enabled')
+    localStorage.removeItem('sl_dev_today_completed')
+    localStorage.removeItem('sl_dev_last_date')
+
+    await syncToDatabase()
+  }
 }))
 
 // --- MongoDB Sync Middleware / Subscription ---

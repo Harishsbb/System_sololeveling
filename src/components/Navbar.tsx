@@ -13,15 +13,12 @@ export const Navbar: React.FC = () => {
   
   const { playHover, playClick } = useSound()
 
-  const handleResetSystem = () => {
+  const resetSystem = useGameStore((state) => state.resetSystem)
+
+  const handleResetSystem = async () => {
     playClick()
     if (window.confirm("WARNING: Are you sure you want to log out and reset the entire Hunter System? This will clear all level progression, stat allocations, gold, and shadow soldier contracts.")) {
-      localStorage.removeItem('sl_player')
-      localStorage.removeItem('sl_skills')
-      localStorage.removeItem('sl_quests')
-      localStorage.removeItem('sl_dungeons')
-      localStorage.removeItem('sl_shadows')
-      localStorage.removeItem('sl_sound_enabled')
+      await resetSystem()
       window.location.reload()
     }
   }
