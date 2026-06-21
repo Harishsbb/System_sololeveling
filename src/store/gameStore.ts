@@ -84,6 +84,13 @@ export interface Player {
   gold: number
   nutrition?: PlayerNutrition
   developer?: PlayerDeveloperQuest
+  workoutHistory?: {
+    id: string
+    date: string
+    exercise: string
+    amount: number
+    xpEarned: number
+  }[]
 }
 
 export interface SkillNodeData {
@@ -144,26 +151,14 @@ export const getCurrentDayCount = (): number => {
 
 export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Quest => {
   const today = new Date()
-  const dayOfWeek = today.getDay() // 0 = Sunday, 6 = Saturday, 1-5 = Mon-Fri
+  const dayOfWeek = today.getDay() // 0 = Sunday, 1-6 = Mon-Sat
 
   if (dayOfWeek === 0) {
-    // Sunday - Rest Day Quest
-    return {
-      id: "daily_training",
-      name: "Rest Day: Muscle Rebuilding",
-      description: "Recovery Day Activated. Muscles are rebuilding. Rest is a crucial phase of the system growth loop.",
-      type: "daily",
-      status: "completed", // Pre-completed to claim reward directly
-      tasks: [],
-      rewards: { xp: 100, statPoints: 0, gold: 50, box: "Recovery Elixir" }
-    }
-  }
-
-  if (dayOfWeek === 6) {
-    // Saturday - Active Recovery Quest
+    // Sunday - Rest/Recovery Day
     const tasksConfig = [
       { id: 'walking', name: 'Walking (Steps)', target: 5000 },
-      { id: 'plank', name: 'Plank (Minutes)', target: 1 }
+      { id: 'stretching', name: 'Stretching (Minutes)', target: 10 },
+      { id: 'meditation', name: 'Meditation (Minutes)', target: 10 }
     ]
     const tasks = tasksConfig.map((cfg) => {
       const existing = currentTasks?.find((t) => t.id === cfg.id)
@@ -176,18 +171,18 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
     })
     return {
       id: "daily_training",
-      name: "Active Recovery: Joint & Tendon Restoration",
-      description: "Focus on light movement to stimulate blood flow and facilitate cellular recovery.",
+      name: "RECOVERY QUEST ACTIVATED",
+      description: "Recovery Day Activated. Muscles are rebuilding. Focus on light movement and stretching. No penalty today.",
       type: "daily",
       status: "active",
       tasks,
-      rewards: { xp: 100, statPoints: 1, gold: 100, box: "Minor Healing Potion" }
+      rewards: { xp: 100, statPoints: 0, gold: 50, box: "Recovery Elixir" }
     }
   }
 
-  // Monday - Friday (Normal Daily Quest based on day count)
+  // Monday - Saturday (Normal Daily Quest based on day count)
   let tasksConfig: { id: string; name: string; target: number }[] = []
-  let rewards = { xp: 150, statPoints: 4, gold: 200, box: "Random Loot Box" }
+  let rewards = { xp: 200, statPoints: 0, gold: 200, box: "Random Loot Box" }
   let name = ""
 
   if (dayCount <= 30) {
@@ -198,12 +193,12 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
       { id: 'walking', name: 'Walking (Steps)', target: 8000 },
       { id: 'plank', name: 'Plank (Minutes)', target: 3 },
       { id: 'meditation', name: 'Meditation (Minutes)', target: 10 },
-      { id: 'hanging', name: 'Hanging (30s Sets)', target: 3 },
-      { id: 'cobra_stretch', name: 'Cobra Stretch (30s Sets)', target: 3 },
-      { id: 'cat_cow', name: 'Cat-Cow Stretch (Mins)', target: 2 },
-      { id: 'wall_posture', name: 'Wall Posture Hold (Mins)', target: 3 }
+      { id: 'hanging', name: 'Hanging (Seconds)', target: 90 },
+      { id: 'cobra_stretch', name: 'Cobra Stretch (Sets)', target: 3 },
+      { id: 'cat_cow', name: 'Cat-Cow (Minutes)', target: 2 },
+      { id: 'wall_posture', name: 'Wall Posture (Minutes)', target: 3 }
     ]
-    rewards = { xp: 150, statPoints: 4, gold: 200, box: "Random Loot Box" }
+    rewards = { xp: 200, statPoints: 0, gold: 200, box: "Random Loot Box" }
   } else if (dayCount <= 60) {
     name = "Daily Quest: B-Rank Intermediate Regimen"
     tasksConfig = [
@@ -212,12 +207,9 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
       { id: 'walking', name: 'Walking (Steps)', target: 10000 },
       { id: 'plank', name: 'Plank (Minutes)', target: 5 },
       { id: 'meditation', name: 'Meditation (Minutes)', target: 15 },
-      { id: 'hanging', name: 'Hanging (30s Sets)', target: 4 },
-      { id: 'cobra_stretch', name: 'Cobra Stretch (30s Sets)', target: 4 },
-      { id: 'cat_cow', name: 'Cat-Cow Stretch (Mins)', target: 3 },
-      { id: 'wall_posture', name: 'Wall Posture Hold (Mins)', target: 5 }
+      { id: 'stretching', name: 'Stretching (Minutes)', target: 15 }
     ]
-    rewards = { xp: 300, statPoints: 6, gold: 400, box: "Elixir of Life" }
+    rewards = { xp: 200, statPoints: 0, gold: 300, box: "Elixir of Life" }
   } else {
     name = "Daily Quest: S-Rank Monarch Regimen"
     tasksConfig = [
@@ -226,12 +218,9 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
       { id: 'running', name: 'Running (KM)', target: 5 },
       { id: 'plank', name: 'Plank (Minutes)', target: 10 },
       { id: 'meditation', name: 'Meditation (Minutes)', target: 20 },
-      { id: 'hanging', name: 'Hanging (30s Sets)', target: 5 },
-      { id: 'cobra_stretch', name: 'Cobra Stretch (30s Sets)', target: 5 },
-      { id: 'cat_cow', name: 'Cat-Cow Stretch (Mins)', target: 5 },
-      { id: 'wall_posture', name: 'Wall Posture Hold (Mins)', target: 5 }
+      { id: 'stretching', name: 'Stretching (Minutes)', target: 20 }
     ]
-    rewards = { xp: 500, statPoints: 10, gold: 800, box: "Monarch Chest" }
+    rewards = { xp: 200, statPoints: 0, gold: 500, box: "Monarch Chest" }
   }
 
   const tasks = tasksConfig.map((cfg) => {
@@ -360,6 +349,7 @@ interface GameState {
   claimDevQuestRewards: () => void
   checkDevDailyReset: () => void
   resetSystem: () => Promise<void>
+  logWorkout: (exercise: string, amount: number, xpEarned: number) => void
 }
 
 // Load initial state from localstorage or use defaults
@@ -610,8 +600,17 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     // Add other rewards
     set((state) => {
+      let updatedStats = { ...state.player.stats }
+      if (questId === 'daily_training') {
+        updatedStats.strength = (updatedStats.strength || 10) + 5
+        updatedStats.endurance = (updatedStats.endurance || 10) + 5
+        updatedStats.health = (updatedStats.health || 100) + 5
+        updatedStats.discipline = (updatedStats.discipline || 10) + 5
+      }
+
       const updatedPlayer = {
         ...state.player,
+        stats: updatedStats,
         statPoints: state.player.statPoints + rewards.statPoints,
         gold: state.player.gold + rewards.gold
       }
@@ -1227,7 +1226,24 @@ export const useGameStore = create<GameState>((set, get) => ({
     localStorage.removeItem('sl_dev_last_date')
 
     await syncToDatabase()
-  }
+  },
+
+  logWorkout: (exercise, amount, xpEarned) => set((state) => {
+    const newLog = {
+      id: Math.random().toString(),
+      date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      exercise,
+      amount,
+      xpEarned
+    }
+    const updatedHistory = [newLog, ...(state.player.workoutHistory || [])]
+    const updatedPlayer = {
+      ...state.player,
+      workoutHistory: updatedHistory
+    }
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    return { player: updatedPlayer }
+  })
 }))
 
 // --- MongoDB Sync Middleware / Subscription ---
