@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Award, Sparkles, Code, Terminal, Timer, Lock, Trophy, CheckSquare, Square } from 'lucide-react'
+import { Award, Sparkles, Code, Terminal, Timer, Lock, Trophy, CheckSquare, Square, BookOpen, Swords, Globe } from 'lucide-react'
 import { useGameStore, getCurrentDayCount } from '../store/gameStore'
 import { useSound } from '../hooks/useSound'
 import { SystemWindow } from '../components/SystemWindow'
@@ -688,6 +688,83 @@ export const SkillsPage: React.FC = () => {
                     </div>
                   )
                 })()}
+              </div>
+            </div>
+
+            {/* Developer Notes / Study Database Panel */}
+            <div className="glass-panel p-6 rounded-lg border border-cyan-400/20 bg-hunter-bg/80 relative overflow-hidden flex flex-col gap-6 mt-4">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-cyan-400" />
+                  <h4 className="font-display text-xs font-black uppercase tracking-widest text-cyan-400">System Study Resources & Database</h4>
+                </div>
+                <span className="font-display text-[9px] text-slate-500">KNOWLEDGE REPOSITORY</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-display text-[10px]">
+                <a 
+                  href="https://www.geeksforgeeks.org/java/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  onClick={() => playClick()}
+                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-950/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
+                >
+                  <div className="p-2 rounded bg-cyan-950/50 border border-cyan-500/20 text-cyan-400 group-hover:shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all">
+                    <Code className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="font-black text-white block uppercase group-hover:text-cyan-400 transition-colors">Core Java Reference</span>
+                    <span className="text-[9px] text-slate-500 block mt-1 leading-relaxed">Access essential study material for Java fundamentals, OOPs, Collections, Multithreading, and Exception Handling.</span>
+                  </div>
+                </a>
+
+                <a 
+                  href="https://leetcode.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  onClick={() => playClick()}
+                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-950/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
+                >
+                  <div className="p-2 rounded bg-cyan-950/50 border border-cyan-500/20 text-cyan-400 group-hover:shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all">
+                    <Swords className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="font-black text-white block uppercase group-hover:text-cyan-400 transition-colors">DSA Combat Database</span>
+                    <span className="text-[9px] text-slate-500 block mt-1 leading-relaxed">Solve coding questions across Array, String, Linked List, Stack, Queue, Trees, Graphs, DP, and Recursion.</span>
+                  </div>
+                </a>
+
+                <a 
+                  href="https://www.indiabix.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  onClick={() => playClick()}
+                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-950/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
+                >
+                  <div className="p-2 rounded bg-cyan-950/50 border border-cyan-500/20 text-cyan-400 group-hover:shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all">
+                    <Terminal className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="font-black text-white block uppercase group-hover:text-cyan-400 transition-colors">Aptitude Practice Vault</span>
+                    <span className="text-[9px] text-slate-500 block mt-1 leading-relaxed">Practice Quantitative Aptitude, Logical Reasoning, and Verbal Ability tests for placement rounds.</span>
+                  </div>
+                </a>
+
+                <a 
+                  href="https://developer.mozilla.org/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  onClick={() => playClick()}
+                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-950/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
+                >
+                  <div className="p-2 rounded bg-cyan-950/50 border border-cyan-500/20 text-cyan-400 group-hover:shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all">
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="font-black text-white block uppercase group-hover:text-cyan-400 transition-colors">Frontend Web Grimoire</span>
+                    <span className="text-[9px] text-slate-500 block mt-1 leading-relaxed">Read MDN references, CSS designs, JavaScript architectures, and client-server API documentation.</span>
+                  </div>
+                </a>
               </div>
             </div>
           </>
