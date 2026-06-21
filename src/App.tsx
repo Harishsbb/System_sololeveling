@@ -19,6 +19,7 @@ import { SkillsPage } from './pages/SkillsPage'
 import { TrainingTracker } from './pages/TrainingTracker'
 import { GalleryPage } from './pages/GalleryPage'
 import { AboutPage } from './pages/AboutPage'
+import { NutritionPage } from './pages/NutritionPage'
 
 function App() {
   const levelUpNotification = useGameStore((state) => state.levelUpNotification)
@@ -26,12 +27,14 @@ function App() {
   const questCompleteNotification = useGameStore((state) => state.questCompleteNotification)
   const dismissQuestComplete = useGameStore((state) => state.dismissQuestComplete)
   const checkDailyQuestExpiry = useGameStore((state) => state.checkDailyQuestExpiry)
+  const checkNutritionDailyReset = useGameStore((state) => state.checkNutritionDailyReset)
   
   const { playClick } = useSound()
 
   useEffect(() => {
     syncFromDatabase()
     checkDailyQuestExpiry()
+    checkNutritionDailyReset()
   }, [])
 
   return (
@@ -47,6 +50,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/quest" element={<QuestPage />} />
+            <Route path="/nutrition" element={<NutritionPage />} />
             <Route path="/army" element={<ShadowArmyPage />} />
             <Route path="/dungeon" element={<DungeonPage />} />
             <Route path="/skills" element={<SkillsPage />} />

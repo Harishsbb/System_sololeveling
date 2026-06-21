@@ -65,6 +65,9 @@ export const ProfilePage: React.FC = () => {
     mana: { name: 'Mana Control', desc: 'Accelerates passive mana restoration rates and reduces fatigue.' },
     focus: { name: 'Focus', desc: 'Increases mental stamina, precision, and skill activation rates.' },
     discipline: { name: 'Discipline', desc: 'Reduces fatigue accumulation and increases attributes growth factors.' },
+    health: { name: 'Health', desc: 'Increases vitality limit and raw structural damage mitigation.' },
+    recovery: { name: 'Recovery', desc: 'Improves active tissue healing rates and recovery times post-injury.' },
+    energy: { name: 'Energy', desc: 'Enhances physical work capacity, sprint duration, and cardio output.' },
   }
 
   return (

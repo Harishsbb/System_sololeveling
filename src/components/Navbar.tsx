@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Volume2, VolumeX, Shield, User, Scroll, Users, Swords, Award, Dumbbell, Image, BookOpen, LogOut } from 'lucide-react'
+import { Menu, X, Volume2, VolumeX, Shield, User, Scroll, Users, Swords, Award, Dumbbell, Image, BookOpen, LogOut, Utensils } from 'lucide-react'
 import { useGameStore } from '../store/gameStore'
 import { useSound } from '../hooks/useSound'
 
@@ -30,6 +30,7 @@ export const Navbar: React.FC = () => {
     { name: 'Home', path: '/', icon: <Shield className="w-4 h-4" /> },
     { name: 'Profile', path: '/profile', icon: <User className="w-4 h-4" /> },
     { name: 'Quest', path: '/quest', icon: <Scroll className="w-4 h-4" /> },
+    { name: 'Nutrition', path: '/nutrition', icon: <Utensils className="w-4 h-4" /> },
     { name: 'Army', path: '/army', icon: <Users className="w-4 h-4" /> },
     { name: 'Dungeon', path: '/dungeon', icon: <Swords className="w-4 h-4" /> },
     { name: 'Skills', path: '/skills', icon: <Award className="w-4 h-4" /> },

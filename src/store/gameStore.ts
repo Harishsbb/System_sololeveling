@@ -11,6 +11,31 @@ export interface Stats {
   mana: number
   focus: number
   discipline: number
+  health: number
+  recovery: number
+  energy: number
+}
+
+export interface PlayerNutrition {
+  meals: {
+    morningFuel: boolean
+    breakfast: boolean
+    lunch: boolean
+    preWorkout: boolean
+    postWorkout: boolean
+    dinner: boolean
+    rewardMeal: boolean
+  }
+  water: number
+  protein: number
+  fruits: number
+  vegetables: number
+  streak: number
+  badges: string[]
+  proteinDaysCount: number
+  waterDaysCount: number
+  fullQuestDaysCount: number
+  lastUpdatedDate: string
 }
 
 export interface Player {
@@ -23,6 +48,7 @@ export interface Player {
   stats: Stats
   statPoints: number
   gold: number
+  nutrition?: PlayerNutrition
 }
 
 export interface SkillNodeData {
@@ -273,6 +299,13 @@ interface GameState {
   dismissQuestComplete: () => void
   upgradeRank: () => boolean
   checkDailyQuestExpiry: () => void
+  toggleMeal: (mealId: keyof PlayerNutrition['meals']) => void
+  addWater: (amount: number) => void
+  addProtein: (amount: number) => void
+  addFruits: (amount: number) => void
+  addVegetables: (amount: number) => void
+  claimFullNutritionRewards: () => void
+  checkNutritionDailyReset: () => void
 }
 
 // Load initial state from localstorage or use defaults
@@ -288,6 +321,28 @@ const getSavedState = <T>(key: string, defaultValue: T): T => {
   return defaultValue
 }
 
+const defaultNutrition: PlayerNutrition = {
+  meals: {
+    morningFuel: false,
+    breakfast: false,
+    lunch: false,
+    preWorkout: false,
+    postWorkout: false,
+    dinner: false,
+    rewardMeal: false
+  },
+  water: 0,
+  protein: 0,
+  fruits: 0,
+  vegetables: 0,
+  streak: 0,
+  badges: [],
+  proteinDaysCount: 0,
+  waterDaysCount: 0,
+  fullQuestDaysCount: 0,
+  lastUpdatedDate: new Date().toDateString()
+}
+
 export const useGameStore = create<GameState>((set, get) => ({
   soundEnabled: getSavedState('sl_sound_enabled', true),
   player: (() => {
@@ -295,6 +350,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (saved && saved.stats) {
       if (saved.stats.focus === undefined) saved.stats.focus = 10
       if (saved.stats.discipline === undefined) saved.stats.discipline = 10
+      if (saved.stats.health === undefined) saved.stats.health = 100
+      if (saved.stats.recovery === undefined) saved.stats.recovery = 10
+      if (saved.stats.energy === undefined) saved.stats.energy = 100
+    }
+    if (!saved.nutrition) {
+      saved.nutrition = defaultNutrition
     }
     if (saved.name !== defaultHunters.name) {
       saved.name = defaultHunters.name
@@ -641,6 +702,225 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     localStorage.setItem('sl_last_active_date', todayString)
     return { quests: updatedQuests }
+  }),
+
+  toggleMeal: (mealId) => set((state) => {
+    const nutrition = state.player.nutrition || defaultNutrition
+    const currentStatus = nutrition.meals[mealId]
+    
+    const updatedMeals = {
+      ...nutrition.meals,
+      [mealId]: !currentStatus
+    }
+    
+    let xpGain = 0
+    if (!currentStatus) {
+      xpGain = 20
+    }
+    
+    const updatedPlayer = {
+      ...state.player,
+      nutrition: {
+        ...nutrition,
+        meals: updatedMeals
+      }
+    }
+    
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    
+    if (xpGain > 0) {
+      setTimeout(() => {
+        get().addXp(20)
+      }, 50)
+    }
+    
+    return { player: updatedPlayer }
+  }),
+
+  addWater: (amount) => set((state) => {
+    const nutrition = state.player.nutrition || defaultNutrition
+    const oldWater = nutrition.water
+    const newWater = Math.max(0, Math.min(10, oldWater + amount))
+    
+    let xpGain = 0
+    let waterDaysCount = nutrition.waterDaysCount
+    const updatedBadges = [...nutrition.badges]
+    
+    if (oldWater < 3.0 && newWater >= 3.0) {
+      xpGain = 50
+      waterDaysCount += 1
+      if (waterDaysCount >= 30 && !updatedBadges.includes('hydration_hunter')) {
+        updatedBadges.push('hydration_hunter')
+      }
+    }
+    
+    const updatedPlayer = {
+      ...state.player,
+      nutrition: {
+        ...nutrition,
+        water: newWater,
+        waterDaysCount,
+        badges: updatedBadges
+      }
+    }
+    
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    
+    if (xpGain > 0) {
+      setTimeout(() => {
+        get().addXp(50)
+      }, 50)
+    }
+    
+    return { player: updatedPlayer }
+  }),
+
+  addProtein: (amount) => set((state) => {
+    const nutrition = state.player.nutrition || defaultNutrition
+    const oldProtein = nutrition.protein
+    const newProtein = Math.max(0, Math.min(500, oldProtein + amount))
+    
+    let xpGain = 0
+    let proteinDaysCount = nutrition.proteinDaysCount
+    const updatedBadges = [...nutrition.badges]
+    
+    if (oldProtein < 100 && newProtein >= 100) {
+      xpGain = 50
+      proteinDaysCount += 1
+      if (proteinDaysCount >= 30 && !updatedBadges.includes('protein_master')) {
+        updatedBadges.push('protein_master')
+      }
+    }
+    
+    const updatedPlayer = {
+      ...state.player,
+      nutrition: {
+        ...nutrition,
+        protein: newProtein,
+        proteinDaysCount,
+        badges: updatedBadges
+      }
+    }
+    
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    
+    if (xpGain > 0) {
+      setTimeout(() => {
+        get().addXp(50)
+      }, 50)
+    }
+    
+    return { player: updatedPlayer }
+  }),
+
+  addFruits: (amount) => set((state) => {
+    const nutrition = state.player.nutrition || defaultNutrition
+    const newFruits = Math.max(0, Math.min(10, nutrition.fruits + amount))
+    const updatedPlayer = {
+      ...state.player,
+      nutrition: { ...nutrition, fruits: newFruits }
+    }
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    return { player: updatedPlayer }
+  }),
+
+  addVegetables: (amount) => set((state) => {
+    const nutrition = state.player.nutrition || defaultNutrition
+    const newVeg = Math.max(0, Math.min(10, nutrition.vegetables + amount))
+    const updatedPlayer = {
+      ...state.player,
+      nutrition: { ...nutrition, vegetables: newVeg }
+    }
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    return { player: updatedPlayer }
+  }),
+
+  claimFullNutritionRewards: () => set((state) => {
+    const nutrition = state.player.nutrition || defaultNutrition
+    let fullQuestDaysCount = nutrition.fullQuestDaysCount + 1
+    const updatedBadges = [...nutrition.badges]
+    
+    if (fullQuestDaysCount >= 90 && !updatedBadges.includes('discipline_monarch')) {
+      updatedBadges.push('discipline_monarch')
+    }
+    
+    const updatedStats = {
+      ...state.player.stats,
+      health: (state.player.stats.health || 100) + 3,
+      recovery: (state.player.stats.recovery || 10) + 3,
+      discipline: (state.player.stats.discipline || 10) + 5,
+      energy: (state.player.stats.energy || 100) + 5
+    }
+    
+    const updatedPlayer = {
+      ...state.player,
+      stats: updatedStats,
+      nutrition: {
+        ...nutrition,
+        fullQuestDaysCount,
+        badges: updatedBadges
+      }
+    }
+    
+    localStorage.setItem('sl_nutrition_today_completed', 'true')
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    
+    setTimeout(() => {
+      get().addXp(150)
+    }, 50)
+    
+    return { player: updatedPlayer }
+  }),
+
+  checkNutritionDailyReset: () => set((state) => {
+    const todayStr = new Date().toDateString()
+    const lastDate = localStorage.getItem('sl_nutrition_last_date')
+    
+    if (lastDate && lastDate !== todayStr) {
+      const nutrition = state.player.nutrition || defaultNutrition
+      const todayCompletedYesterday = localStorage.getItem('sl_nutrition_today_completed') === 'true'
+      
+      let newStreak = nutrition.streak
+      if (todayCompletedYesterday) {
+        newStreak += 1
+      } else {
+        newStreak = 0
+      }
+      
+      const resetMeals = {
+        morningFuel: false,
+        breakfast: false,
+        lunch: false,
+        preWorkout: false,
+        postWorkout: false,
+        dinner: false,
+        rewardMeal: false
+      }
+      
+      const updatedPlayer = {
+        ...state.player,
+        nutrition: {
+          ...nutrition,
+          meals: resetMeals,
+          water: 0,
+          protein: 0,
+          fruits: 0,
+          vegetables: 0,
+          streak: newStreak
+        }
+      }
+      
+      localStorage.setItem('sl_nutrition_today_completed', 'false')
+      localStorage.setItem('sl_nutrition_last_date', todayStr)
+      localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+      
+      return { player: updatedPlayer }
+    }
+    
+    if (!lastDate) {
+      localStorage.setItem('sl_nutrition_last_date', todayStr)
+    }
+    return {}
   }),
 
   dismissLevelUp: () => set({ levelUpNotification: false }),

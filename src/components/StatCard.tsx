@@ -7,7 +7,7 @@ import { useSound } from '../hooks/useSound'
 interface StatCardProps {
   name: string
   value: number
-  statKey: 'strength' | 'agility' | 'intelligence' | 'endurance' | 'mana' | 'focus' | 'discipline'
+  statKey: 'strength' | 'agility' | 'intelligence' | 'endurance' | 'mana' | 'focus' | 'discipline' | 'health' | 'recovery' | 'energy'
   description: string
   canUpgrade: boolean
 }
@@ -38,6 +38,12 @@ export const StatCard: React.FC<StatCardProps> = ({
         return <Target className="w-5 h-5 text-sky-400" />
       case 'discipline':
         return <Award className="w-5 h-5 text-indigo-400" />
+      case 'health':
+        return <Activity className="w-5 h-5 text-red-400" />
+      case 'recovery':
+        return <Flame className="w-5 h-5 text-teal-400" />
+      case 'energy':
+        return <Zap className="w-5 h-5 text-yellow-400" />
       default:
         return <Activity className="w-5 h-5 text-slate-400" />
     }
@@ -52,6 +58,9 @@ export const StatCard: React.FC<StatCardProps> = ({
       case 'mana': return 'hover:border-hunter-purple/40 hover:shadow-[0_0_15px_rgba(157,78,221,0.15)]'
       case 'focus': return 'hover:border-sky-400/40 hover:shadow-[0_0_15px_rgba(56,189,248,0.15)]'
       case 'discipline': return 'hover:border-indigo-400/40 hover:shadow-[0_0_15px_rgba(129,140,248,0.15)]'
+      case 'health': return 'hover:border-red-400/40 hover:shadow-[0_0_15px_rgba(248,113,113,0.15)]'
+      case 'recovery': return 'hover:border-teal-400/40 hover:shadow-[0_0_15px_rgba(45,212,191,0.15)]'
+      case 'energy': return 'hover:border-yellow-400/40 hover:shadow-[0_0_15px_rgba(250,204,21,0.15)]'
       default: return 'hover:border-slate-500/40 hover:shadow-[0_0_15px_rgba(100,116,139,0.15)]'
     }
   }
