@@ -52,26 +52,44 @@ export const QuestPage: React.FC = () => {
       <div className="max-w-4xl mx-auto flex flex-col gap-6">
         
         {/* Warning Penalty Notice banner */}
-        <motion.div
-          initial={{ opacity: 0, y: -15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded border border-red-500/30 bg-red-950/15 flex items-start gap-3 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
-        >
-          <AlertOctagon className="w-5 h-5 text-red-500 shrink-0 mt-0.5 animate-pulse" />
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5">
-              <h4 className="font-display text-xs font-black text-red-500 uppercase tracking-widest">
-                !! SYSTEM WARNING: MIDNIGHT PENALTY DEADLINE INCOMING !!
-              </h4>
-              <span className="font-display text-xs font-bold text-red-400 bg-red-950/50 border border-red-500/30 px-2 py-0.5 rounded animate-pulse">
-                {timeLeft} REMAINING
-              </span>
+        {today.getDay() !== 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 rounded border border-red-500/30 bg-red-950/15 flex items-start gap-3 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+          >
+            <AlertOctagon className="w-5 h-5 text-red-500 shrink-0 mt-0.5 animate-pulse" />
+            <div className="flex-1">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5">
+                <h4 className="font-display text-xs font-black text-red-500 uppercase tracking-widest">
+                  !! SYSTEM WARNING: MIDNIGHT PENALTY DEADLINE INCOMING !!
+                </h4>
+                <span className="font-display text-xs font-bold text-red-400 bg-red-950/50 border border-red-500/30 px-2 py-0.5 rounded animate-pulse">
+                  {timeLeft} REMAINING
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                Failure to complete the training regimen before the countdown reaches zero will trigger the Penalty Quest. You will be locked out and must complete penalty survival exercises.
+              </p>
             </div>
-            <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-              Failure to complete the training regimen before the countdown reaches zero will trigger the Penalty Quest. You will be locked out and must complete penalty survival exercises.
-            </p>
-          </div>
-        </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 rounded border border-purple-500/30 bg-purple-950/15 flex items-start gap-3 shadow-[0_0_15px_rgba(168,85,247,0.1)]"
+          >
+            <Info className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-display text-xs font-black text-purple-400 uppercase tracking-widest">
+                SYSTEM MESSAGE: RECOVERY DAY ENGAGED
+              </h4>
+              <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                No penalty rules are active today. Take time to relax, perform light stretching, and let your muscle fibers recover.
+              </p>
+            </div>
+          </motion.div>
+        )}
 
         {/* 90-Day Transformation Timeline widget */}
         <motion.div
