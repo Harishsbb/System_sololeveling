@@ -1,73 +1,82 @@
-# React + TypeScript + Vite
+# 🌌 HUNTER SYSTEM : SHADOW MONARCH REGIMEN
+> **"Arise."** — The ultimate fitness progression system inspired by Solo Leveling.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+## ⚡ SYSTEM STATUS HUD
+| ATTRIBUTE | SPECIFICATION |
+| :--- | :--- |
+| **SYSTEM ENGINE** | React 19 + TypeScript + Vite |
+| **STYLING LAYER** | Tailored Vanilla CSS HUD Grid |
+| **DATABASE COMPLIANCE** | MongoDB Atlas Synchronized |
+| **DECIBEL ENGINE** | Web Audio API Synthetic Oscillators |
+| **TIMELINE SCHEMA** | 90-Day Hunter Transcendence Progression |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🔮 THE COGNITIVE INTERFACE (UI)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The UI is designed to mimic the holographic dashboard of the **Solo Leveling** system:
+- **Futuristic HUD Panel**: Complete with glassmorphic panels, glowing cyber blue border accents, and dynamic game-like warning indicators.
+- **Cinematic Hero**: Autoplay looped dark fantasy background video layered with ambient vignette overlays.
+- **Dimensional Portal**: A dynamic portal interface for training dungeon compliance logging.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 📈 90-DAY TRANSFORMATION PROGRESSION
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+The system automatically manages your rank and daily fitness regimen based on calendar progression since **June 21, 2026**:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```mermaid
+gantt
+    title 90-Day Hunter Evolution Roadmap
+    dateFormat  YYYY-MM-DD
+    section Rank Timeline
+    E-Rank Beginner Regimen (30 Days) :active, E_RANK, 2026-06-21, 2026-07-21
+    B-Rank Intermediate Regimen (30 Days) : B_RANK, 2026-07-22, 2026-08-20
+    S-Rank Monarch Regimen (30 Days)      : S_RANK, 2026-08-21, 2026-09-18
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### ⚔️ Progression Matrix
+* **E-Rank (Days 1–30)**: Build structural compliance.
+  - 30 Push-ups \| 50 Squats \| 8,000 Steps \| 3 Min Plank
+* **B-Rank (Days 31–60)**: Core expansion.
+  - 60 Push-ups \| 80 Squats \| 10,000 Steps \| 5 Min Plank
+* **S-Rank (Days 61–90)**: Celestial ascension.
+  - 100 Push-ups \| 100 Squats \| 5 KM Run \| 10 Min Plank
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🚨 SYSTEM WARNING: THE PENALTY PROTOCOL
+*Failure to fulfill the daily workout regimen before midnight triggers the system's emergency protocol:*
+- **Lock State**: The dashboard transforms into a red-glitched alert panel.
+- **Wasteland survival**: The user is barred from regular features until they log the required penalty reps.
+- **Reset Check**: Enduring the penalty clears the negative status and restores the daily timeline.
+
+---
+
+## 🔊 SYNTHETIC AUDIO FRAMEWORK (`useSound.ts`)
+To achieve low-latency, asset-free feedback without external media requests, the application utilizes native **Web Audio API** oscillators:
+* **Holographic Ticks**: Fast-decay high-pass frequency pings.
+* **Level-Up Chord**: Ascending tri-tone arpeggio sequence.
+* **Gate Opening Rumble**: 45Hz sub-bass oscillator modulation simulating tearing spatial portals.
+
+---
+
+## 🛠️ ARCHITECTURAL SETUP
+
+### Installation
+Ensure Node.js is installed locally, then run:
+```bash
+# Install package dependencies
+npm install
+
+# Start the local development server
+npm run dev
+
+# Run full TypeScript compiler and build check
+npm run build
 ```
+
+---
+*Created and maintained under authorization of the Shadow Monarch.*
