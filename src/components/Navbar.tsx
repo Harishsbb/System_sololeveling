@@ -74,9 +74,18 @@ export const Navbar: React.FC = () => {
           onMouseEnter={playHover}
           className="flex items-center gap-2 font-display text-base md:text-lg font-black tracking-widest text-white hover:text-hunter-blue transition-colors group"
         >
-          <span className="w-6 h-6 border-2 border-hunter-blue flex items-center justify-center rounded-sm rotate-45 group-hover:shadow-[0_0_10px_rgba(0,240,255,0.8)] transition-all">
-            <span className="-rotate-45 font-sans font-black text-xs text-hunter-blue">S</span>
-          </span>
+          <svg className="w-7 h-7 drop-shadow-[0_0_6px_rgba(0,240,255,0.5)] group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.9)] transition-all duration-300" viewBox="0 0 100 100" fill="none">
+            <defs>
+              <linearGradient id="navShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#00f0ff" />
+                <stop offset="50%" stopColor="#7b2cbf" />
+                <stop offset="100%" stopColor="#9d4edd" />
+              </linearGradient>
+            </defs>
+            <polygon points="50,6 94,50 50,94 6,50" fill="#030712" stroke="url(#navShieldGrad)" strokeWidth="6.5" />
+            <polygon points="50,16 84,50 50,84 16,50" fill="none" stroke="#00f0ff" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6" />
+            <path d="M62,32 L42,32 L38,47 L62,53 L58,68 L38,68" fill="none" stroke="#00f0ff" strokeWidth="8.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           <span>HUNTER <span className="text-hunter-blue">SYSTEM</span></span>
         </NavLink>
 
