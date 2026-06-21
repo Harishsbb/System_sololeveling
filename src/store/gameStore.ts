@@ -308,8 +308,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     const dayCount = getCurrentDayCount()
     
     if (saved && saved.length > 0) {
-      const updatedQuest = getQuestForDayCount(dayCount, saved[0].tasks)
-      updatedQuest.status = saved[0].status
+      const hasSitups = saved[0].tasks?.some((t) => t.id === 'situps')
+      const updatedQuest = getQuestForDayCount(dayCount, hasSitups ? undefined : saved[0].tasks)
+      if (hasSitups) {
+        updatedQuest.status = 'active'
+      } else {
+        updatedQuest.status = saved[0].status
+      }
       const result = [updatedQuest]
       localStorage.setItem('sl_quests', JSON.stringify(result))
       return result
@@ -652,20 +657,46 @@ export const syncFromDatabase = async () => {
     const response = await fetch(`${BACKEND_URL}/${encodeURIComponent(name)}`);
     if (response.ok) {
       const data = await response.json();
+      
+      // Sanitize/regenerate the daily quest from the database to align with the active day & rank rules
+      const dayCount = getCurrentDayCount();
+      const rawQuests = data.quests || [];
+      let needDbUpdate = false;
+      const sanitizedQuests = rawQuests.map((q: any) => {
+        if (q.id === 'daily_training') {
+          const hasSitups = q.tasks?.some((t: any) => t.id === 'situps');
+          if (hasSitups) {
+            needDbUpdate = true;
+          }
+          const updated = getQuestForDayCount(dayCount, hasSitups ? undefined : q.tasks);
+          if (hasSitups) {
+            updated.status = 'active';
+          } else {
+            updated.status = q.status;
+          }
+          return updated;
+        }
+        return q;
+      });
+
       useGameStore.setState({
         player: data.player,
         skills: data.skills,
-        quests: data.quests,
+        quests: sanitizedQuests,
         dungeons: data.dungeons,
         shadows: data.shadows
       });
       // Save locally as secondary fallback
       localStorage.setItem('sl_player', JSON.stringify(data.player));
       localStorage.setItem('sl_skills', JSON.stringify(data.skills));
-      localStorage.setItem('sl_quests', JSON.stringify(data.quests));
+      localStorage.setItem('sl_quests', JSON.stringify(sanitizedQuests));
       localStorage.setItem('sl_dungeons', JSON.stringify(data.dungeons));
       localStorage.setItem('sl_shadows', JSON.stringify(data.shadows));
       console.log('Successfully synced game state from MongoDB.');
+      if (needDbUpdate) {
+        console.log('Detected legacy tasks. Rewriting database backup...');
+        await syncToDatabase();
+      }
     } else if (response.status === 404) {
       // Not found, seed DB with current state
       console.log('No online state found for this Hunter. Initializing MongoDB record...');
