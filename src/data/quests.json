@@ -1,0 +1,21 @@
+[
+  {
+    "id": "daily_training",
+    "name": "Daily Quest: Training of the Weak",
+    "description": "Complete the training regimen. WARNING: Failure to complete this daily quest will result in a Penalty Quest in the Wasteland.",
+    "type": "daily",
+    "status": "active",
+    "tasks": [
+      { "id": "pushups", "name": "Push-ups", "current": 0, "target": 100 },
+      { "id": "situps", "name": "Sit-ups", "current": 0, "target": 100 },
+      { "id": "squats", "name": "Squats", "current": 0, "target": 100 },
+      { "id": "running", "name": "Running (KM)", "current": 0, "target": 10 }
+    ],
+    "rewards": {
+      "xp": 150,
+      "statPoints": 3,
+      "gold": 200,
+      "box": "Random Loot Box"
+    }
+  }
+]

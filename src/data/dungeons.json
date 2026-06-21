@@ -1,0 +1,68 @@
+[
+  {
+    "id": "double_dungeon",
+    "name": "Cartenon Temple (Double Dungeon)",
+    "rank": "E",
+    "bossName": "Statue of God",
+    "dangerLevel": "Very Low (Initial) / Catastrophic (Hidden)",
+    "reward": "System Monarch Key",
+    "description": "A seemingly low-rank E-gate containing a hidden sanctuary of god. Don't look into the eyes of the statue.",
+    "manaRequired": 0,
+    "xpReward": 100
+  },
+  {
+    "id": "beast_lair",
+    "name": "Glow Stone Cave",
+    "rank": "D",
+    "bossName": "Magical Sabretooth Tiger",
+    "dangerLevel": "Low",
+    "reward": "Kasaka's Venom Dagger",
+    "description": "A dungeon containing magical feline beasts. Good for grinding basic stats.",
+    "manaRequired": 20,
+    "xpReward": 250
+  },
+  {
+    "id": "red_gate",
+    "name": "Frozen Wilderness (Red Gate)",
+    "rank": "C",
+    "bossName": "Baruka (Ice Elf Commander)",
+    "dangerLevel": "Medium / Severe Frost",
+    "reward": "Baruka's Dagger & Ice Crystals",
+    "description": "A dimensional anomaly gate that seals upon entry, stranding hunters in an icy snowstorm.",
+    "manaRequired": 50,
+    "xpReward": 600
+  },
+  {
+    "id": "demon_castle",
+    "name": "Demon Castle",
+    "rank": "B",
+    "bossName": "Baran (Demon King Shadow)",
+    "dangerLevel": "High",
+    "reward": "Elixir of Life Ingredients",
+    "description": "A multi-floor dimensional tower located in Seoul, filled with high-ranking demon soldiers and hellfire.",
+    "manaRequired": 120,
+    "xpReward": 1500
+  },
+  {
+    "id": "orc_territory",
+    "name": "High Orc Temple",
+    "rank": "A",
+    "bossName": "Kargalgan (Orc High Shaman)",
+    "dangerLevel": "Very High",
+    "reward": "Orb of Avarice (Double Magic Power)",
+    "description": "A giant gate containing elite Orc shamans who cast powerful shield barriers and gravity magic.",
+    "manaRequired": 250,
+    "xpReward": 4000
+  },
+  {
+    "id": "jeju_island",
+    "name": "Jeju Island Nest",
+    "rank": "S",
+    "bossName": "Beru (Ant King)",
+    "dangerLevel": "Fatal / Catastrophic",
+    "reward": "Beru Shadow Soldier Extraction",
+    "description": "An open island dungeon overrun by hyper-evolved mutant ants that can devour hunters and fly.",
+    "manaRequired": 500,
+    "xpReward": 12000
+  }
+]

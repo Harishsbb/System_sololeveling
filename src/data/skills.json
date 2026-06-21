@@ -1,0 +1,58 @@
+[
+  {
+    "id": "shadow_extraction",
+    "name": "Shadow Extraction",
+    "description": "Extract shadows from deceased targets to create loyal soldiers.",
+    "level": 1,
+    "maxLevel": 5,
+    "manaCost": 500,
+    "cooldown": 0,
+    "icon": "UserPlus",
+    "category": "Monarch",
+    "requiredLevel": 1,
+    "unlocked": false,
+    "cost": 5
+  },
+  {
+    "id": "speed_boost",
+    "name": "Speed Boost",
+    "description": "Increase movement and attack speed by 30% for a short period.",
+    "level": 1,
+    "maxLevel": 5,
+    "manaCost": 40,
+    "cooldown": 20,
+    "icon": "Zap",
+    "category": "Physical",
+    "requiredLevel": 2,
+    "unlocked": false,
+    "cost": 3
+  },
+  {
+    "id": "strength_upgrade",
+    "name": "Strength Upgrade",
+    "description": "Passively increases physical attack power and weight threshold.",
+    "level": 1,
+    "maxLevel": 5,
+    "manaCost": 0,
+    "cooldown": 0,
+    "icon": "Activity",
+    "category": "Passive",
+    "requiredLevel": 3,
+    "unlocked": false,
+    "cost": 3
+  },
+  {
+    "id": "mana_control",
+    "name": "Mana Control",
+    "description": "Increases mana regeneration and reduces mana costs by 15%.",
+    "level": 1,
+    "maxLevel": 5,
+    "manaCost": 0,
+    "cooldown": 0,
+    "icon": "Cpu",
+    "category": "Mana",
+    "requiredLevel": 5,
+    "unlocked": false,
+    "cost": 4
+  }
+]

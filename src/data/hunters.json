@@ -1,0 +1,17 @@
+{
+  "name": "Quantum Ghost",
+  "title": "Shadow Monarch",
+  "rank": "E",
+  "level": 1,
+  "xp": 0,
+  "xpNeeded": 100,
+  "stats": {
+    "strength": 10,
+    "agility": 10,
+    "intelligence": 10,
+    "endurance": 10,
+    "mana": 10
+  },
+  "statPoints": 5,
+  "gold": 500
+}
