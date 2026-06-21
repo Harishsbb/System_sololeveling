@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { Sparkles, Trophy } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useGameStore, syncFromDatabase } from './store/gameStore'
 import { useSound } from './hooks/useSound'
 
@@ -24,11 +25,13 @@ function App() {
   const dismissLevelUp = useGameStore((state) => state.dismissLevelUp)
   const questCompleteNotification = useGameStore((state) => state.questCompleteNotification)
   const dismissQuestComplete = useGameStore((state) => state.dismissQuestComplete)
+  const checkDailyQuestExpiry = useGameStore((state) => state.checkDailyQuestExpiry)
   
   const { playClick } = useSound()
 
   useEffect(() => {
     syncFromDatabase()
+    checkDailyQuestExpiry()
   }, [])
 
   return (
@@ -57,20 +60,61 @@ function App() {
         <Modal
           isOpen={levelUpNotification}
           onClose={dismissLevelUp}
-          title="SYSTEM MESSAGE: LEVEL UP"
+          title="SYSTEM MESSAGE: TRANSCENDENCE"
           variant="gold"
+          className="relative overflow-visible"
         >
-          <div className="flex flex-col items-center justify-center text-center gap-4 py-4 select-none">
-            <div className="relative w-20 h-20 rounded-full bg-hunter-gold/10 border border-hunter-gold flex items-center justify-center shadow-[0_0_20px_rgba(255,183,3,0.4)] animate-bounce">
-              <Sparkles className="w-10 h-10 text-hunter-gold" />
+          <div className="flex flex-col items-center justify-center text-center gap-4 py-4 select-none relative z-10">
+            {/* Animated glowing rays */}
+            <div className="absolute inset-0 -top-20 pointer-events-none overflow-visible flex items-center justify-center">
+              <div className="w-60 h-60 bg-hunter-gold/20 rounded-full blur-[60px] animate-pulse absolute" />
+              <div className="w-80 h-80 bg-yellow-500/10 rounded-full blur-[80px] animate-ping absolute" />
             </div>
 
-            <h3 className="font-display text-lg font-black text-hunter-gold uppercase tracking-wider">
-              CONGRATULATION! LEVEL INCREASED!
-            </h3>
+            {/* Rising particle effect loops */}
+            <div className="relative w-24 h-24 rounded-full bg-hunter-gold/25 border-2 border-hunter-gold flex items-center justify-center shadow-[0_0_35px_rgba(255,183,3,0.6)] overflow-hidden">
+              <motion.div
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: -50, opacity: [0, 1, 1, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                className="absolute w-1.5 h-1.5 bg-white rounded-full left-6 pointer-events-none"
+              />
+              <motion.div
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: -60, opacity: [0, 1, 1, 0] }}
+                transition={{ repeat: Infinity, duration: 2, delay: 0.4, ease: "linear" }}
+                className="absolute w-2 h-2 bg-hunter-gold rounded-full right-8 pointer-events-none"
+              />
+              <motion.div
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: -40, opacity: [0, 1, 1, 0] }}
+                transition={{ repeat: Infinity, duration: 1.2, delay: 0.8, ease: "linear" }}
+                className="absolute w-1 h-1 bg-yellow-300 rounded-full left-12 pointer-events-none"
+              />
+              <Sparkles className="w-12 h-12 text-hunter-gold drop-shadow-[0_0_8px_rgba(255,183,3,0.8)] animate-pulse" />
+            </div>
+
+            <motion.h3 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="font-display text-2xl font-black text-hunter-gold uppercase tracking-widest drop-shadow-[0_0_15px_rgba(255,183,3,0.8)]"
+            >
+              LEVEL UP
+            </motion.h3>
+
+            <motion.h4 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="font-display text-[10px] text-white/85 tracking-widest uppercase"
+            >
+              System Transcendence Completed
+            </motion.h4>
             
-            <p className="text-xs text-slate-300 leading-relaxed font-sans max-w-sm">
-              Your physical capacity has transcended. 5 Stat Points have been assigned to your status panel. Re-allocate them on the Profile tab to cement your gains.
+            <p className="text-xs text-slate-300 leading-relaxed font-sans max-w-sm mt-2">
+              Your cellular and muscular structures have undergone complete system reorganization.
+              <strong className="text-hunter-gold block mt-2 text-xs font-display tracking-wider">⚔️ +5 STATUS POINTS GRANTED</strong>
             </p>
 
             <button
@@ -78,9 +122,9 @@ function App() {
                 playClick()
                 dismissLevelUp()
               }}
-              className="w-full mt-4 py-2.5 rounded bg-hunter-gold text-hunter-bg font-display font-black text-xs tracking-widest uppercase hover:brightness-110 cursor-pointer shadow-[0_0_12px_rgba(255,183,3,0.4)] transition-all"
+              className="w-full mt-4 py-3 rounded-sm bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-hunter-bg font-display font-black text-xs tracking-widest uppercase hover:brightness-110 cursor-pointer shadow-[0_0_20px_rgba(255,183,3,0.4)] transition-all border-none"
             >
-              Acknowledge System Log
+              Acknowledge System Upgrade
             </button>
           </div>
         </Modal>

@@ -50,7 +50,7 @@ export interface Quest {
   name: string
   description: string
   type: string
-  status: 'active' | 'completed' | 'rewarded'
+  status: 'active' | 'completed' | 'rewarded' | 'failed'
   tasks: Task[]
   rewards: {
     xp: number
@@ -72,56 +72,67 @@ export interface Dungeon {
   xpReward: number
 }
 
-export const getQuestForLevel = (level: number, currentTasks?: Task[]): Quest => {
-  let tasksConfig: { id: string; name: string; target: number }[] = [];
-  let rewards = { xp: 150, statPoints: 4, gold: 200, box: "Random Loot Box" };
+export const getCurrentDayCount = (): number => {
+  const startDate = new Date('2026-06-21T00:00:00')
+  const today = new Date()
+  const diffTime = today.getTime() - startDate.getTime()
+  return Math.max(1, Math.min(90, Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1))
+}
 
-  if (level < 30) {
+export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Quest => {
+  let tasksConfig: { id: string; name: string; target: number }[] = []
+  let rewards = { xp: 150, statPoints: 4, gold: 200, box: "Random Loot Box" }
+  let name = ""
+
+  if (dayCount <= 30) {
+    name = "Daily Quest: E-Rank Beginner Regimen"
     tasksConfig = [
       { id: 'pushups', name: 'Push-ups', target: 30 },
       { id: 'squats', name: 'Squats', target: 50 },
       { id: 'walking', name: 'Walking (Steps)', target: 8000 },
       { id: 'plank', name: 'Plank (Minutes)', target: 3 }
-    ];
-    rewards = { xp: 150, statPoints: 4, gold: 200, box: "Random Loot Box" };
-  } else if (level < 60) {
+    ]
+    rewards = { xp: 150, statPoints: 4, gold: 200, box: "Random Loot Box" }
+  } else if (dayCount <= 60) {
+    name = "Daily Quest: B-Rank Intermediate Regimen"
     tasksConfig = [
       { id: 'pushups', name: 'Push-ups', target: 60 },
       { id: 'squats', name: 'Squats', target: 80 },
       { id: 'walking', name: 'Walking (Steps)', target: 10000 },
       { id: 'plank', name: 'Plank (Minutes)', target: 5 }
-    ];
-    rewards = { xp: 300, statPoints: 6, gold: 400, box: "Elixir of Life" };
+    ]
+    rewards = { xp: 300, statPoints: 6, gold: 400, box: "Elixir of Life" }
   } else {
+    name = "Daily Quest: S-Rank Monarch Regimen"
     tasksConfig = [
       { id: 'pushups', name: 'Push-ups', target: 100 },
       { id: 'squats', name: 'Squats', target: 100 },
       { id: 'running', name: 'Running (KM)', target: 5 },
       { id: 'plank', name: 'Plank (Minutes)', target: 10 }
-    ];
-    rewards = { xp: 500, statPoints: 10, gold: 800, box: "Monarch Chest" };
+    ]
+    rewards = { xp: 500, statPoints: 10, gold: 800, box: "Monarch Chest" }
   }
 
   const tasks = tasksConfig.map((cfg) => {
-    const existing = currentTasks?.find((t) => t.id === cfg.id);
+    const existing = currentTasks?.find((t) => t.id === cfg.id)
     return {
       id: cfg.id,
       name: cfg.name,
       current: existing ? existing.current : 0,
       target: cfg.target
-    };
-  });
+    }
+  })
 
   return {
     id: "daily_training",
-    name: level < 30 ? "Daily Quest: Training of the Weak" : level < 60 ? "Daily Quest: Intermediate Regimen" : "Daily Quest: Shadow Monarch Path",
-    description: "Complete the training regimen. WARNING: Failure to complete this daily quest will result in a Penalty Quest.",
+    name,
+    description: "Complete the training regimen. WARNING: Failure to complete this daily quest before midnight will result in a Penalty Quest.",
     type: "daily",
     status: "active",
     tasks,
     rewards
-  };
-};
+  }
+}
 
 export interface ShadowSoldier {
   id: string
@@ -213,6 +224,7 @@ interface GameState {
   dismissLevelUp: () => void
   dismissQuestComplete: () => void
   upgradeRank: () => boolean
+  checkDailyQuestExpiry: () => void
 }
 
 // Load initial state from localstorage or use defaults
@@ -241,17 +253,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   skills: getSavedState('sl_skills', defaultSkills as SkillNodeData[]),
   quests: (() => {
     const saved = getSavedState('sl_quests', null as Quest[] | null)
-    const defaultH = defaultHunters as Player
-    const playerLvl = getSavedState('sl_player', defaultH).level
+    const dayCount = getCurrentDayCount()
     
     if (saved && saved.length > 0) {
-      const updatedQuest = getQuestForLevel(playerLvl, saved[0].tasks)
+      const updatedQuest = getQuestForDayCount(dayCount, saved[0].tasks)
       updatedQuest.status = saved[0].status
       const result = [updatedQuest]
       localStorage.setItem('sl_quests', JSON.stringify(result))
       return result
     } else {
-      const result = [getQuestForLevel(playerLvl)]
+      const result = [getQuestForDayCount(dayCount)]
       localStorage.setItem('sl_quests', JSON.stringify(result))
       return result
     }
@@ -315,7 +326,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 
       let updatedQuests = state.quests
       if (leveledUp) {
-        const updatedQuest = getQuestForLevel(level, state.quests[0]?.tasks)
+        const dayCount = getCurrentDayCount()
+        const updatedQuest = getQuestForDayCount(dayCount, state.quests[0]?.tasks)
         updatedQuest.status = state.quests[0]?.status || 'active'
         updatedQuests = state.quests.map(q => q.id === 'daily_training' ? updatedQuest : q)
         localStorage.setItem('sl_quests', JSON.stringify(updatedQuests))
@@ -397,7 +409,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   resetQuest: (questId) => set((state) => {
     const updatedQuests = state.quests.map((q) => {
       if (q.id === questId) {
-        const freshQuest = getQuestForLevel(state.player.level)
+        const dayCount = getCurrentDayCount()
+        const freshQuest = getQuestForDayCount(dayCount)
         return {
           ...freshQuest,
           status: 'active' as const
@@ -527,6 +540,25 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
     return false
   },
+
+  checkDailyQuestExpiry: () => set((state) => {
+    const lastActiveDate = localStorage.getItem('sl_last_active_date')
+    const todayString = new Date().toDateString()
+    let updatedQuests = state.quests
+    
+    if (lastActiveDate && lastActiveDate !== todayString) {
+      updatedQuests = state.quests.map((q) => {
+        if (q.id === 'daily_training' && q.status === 'active') {
+          return { ...q, status: 'failed' as const }
+        }
+        return q
+      })
+      localStorage.setItem('sl_quests', JSON.stringify(updatedQuests))
+    }
+    
+    localStorage.setItem('sl_last_active_date', todayString)
+    return { quests: updatedQuests }
+  }),
 
   dismissLevelUp: () => set({ levelUpNotification: false }),
   dismissQuestComplete: () => set({ questCompleteNotification: null })
