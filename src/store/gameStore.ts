@@ -14,6 +14,28 @@ export interface Stats {
   health: number
   recovery: number
   energy: number
+  problemSolving?: number
+  communication?: number
+}
+
+export interface PlayerDeveloperQuest {
+  devLevel: number
+  devXp: number
+  devXpNeeded: number
+  dsaSolved: number
+  aptitudeQuestions: number
+  codingStreak: number
+  projectHours: number
+  javaProgress: string[]
+  lastClaimedDate: string
+  achievements: string[]
+  
+  // Daily progress
+  dailyJavaMin: number
+  dailyDsaSolved: number
+  dailyAptitudeSolved: number
+  dailyCommMin: number
+  dailyProjMin: number
 }
 
 export interface PlayerNutrition {
@@ -49,6 +71,7 @@ export interface Player {
   statPoints: number
   gold: number
   nutrition?: PlayerNutrition
+  developer?: PlayerDeveloperQuest
 }
 
 export interface SkillNodeData {
@@ -162,7 +185,11 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
       { id: 'squats', name: 'Squats', target: 50 },
       { id: 'walking', name: 'Walking (Steps)', target: 8000 },
       { id: 'plank', name: 'Plank (Minutes)', target: 3 },
-      { id: 'meditation', name: 'Meditation (Minutes)', target: 10 }
+      { id: 'meditation', name: 'Meditation (Minutes)', target: 10 },
+      { id: 'hanging', name: 'Hanging (30s Sets)', target: 3 },
+      { id: 'cobra_stretch', name: 'Cobra Stretch (30s Sets)', target: 3 },
+      { id: 'cat_cow', name: 'Cat-Cow Stretch (Mins)', target: 2 },
+      { id: 'wall_posture', name: 'Wall Posture Hold (Mins)', target: 3 }
     ]
     rewards = { xp: 150, statPoints: 4, gold: 200, box: "Random Loot Box" }
   } else if (dayCount <= 60) {
@@ -172,7 +199,11 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
       { id: 'squats', name: 'Squats', target: 80 },
       { id: 'walking', name: 'Walking (Steps)', target: 10000 },
       { id: 'plank', name: 'Plank (Minutes)', target: 5 },
-      { id: 'meditation', name: 'Meditation (Minutes)', target: 15 }
+      { id: 'meditation', name: 'Meditation (Minutes)', target: 15 },
+      { id: 'hanging', name: 'Hanging (30s Sets)', target: 4 },
+      { id: 'cobra_stretch', name: 'Cobra Stretch (30s Sets)', target: 4 },
+      { id: 'cat_cow', name: 'Cat-Cow Stretch (Mins)', target: 3 },
+      { id: 'wall_posture', name: 'Wall Posture Hold (Mins)', target: 5 }
     ]
     rewards = { xp: 300, statPoints: 6, gold: 400, box: "Elixir of Life" }
   } else {
@@ -182,7 +213,11 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
       { id: 'squats', name: 'Squats', target: 100 },
       { id: 'running', name: 'Running (KM)', target: 5 },
       { id: 'plank', name: 'Plank (Minutes)', target: 10 },
-      { id: 'meditation', name: 'Meditation (Minutes)', target: 20 }
+      { id: 'meditation', name: 'Meditation (Minutes)', target: 20 },
+      { id: 'hanging', name: 'Hanging (30s Sets)', target: 5 },
+      { id: 'cobra_stretch', name: 'Cobra Stretch (30s Sets)', target: 5 },
+      { id: 'cat_cow', name: 'Cat-Cow Stretch (Mins)', target: 5 },
+      { id: 'wall_posture', name: 'Wall Posture Hold (Mins)', target: 5 }
     ]
     rewards = { xp: 500, statPoints: 10, gold: 800, box: "Monarch Chest" }
   }
@@ -284,6 +319,7 @@ interface GameState {
   dungeons: Dungeon[]
   shadows: ShadowSoldier[]
   levelUpNotification: boolean
+  devLevelUpNotification: boolean
   questCompleteNotification: string | null
 
   toggleSound: () => void
@@ -296,6 +332,7 @@ interface GameState {
   unlockShadow: (shadowId: string) => boolean
   completeDungeon: (dungeonId: string) => { success: boolean; xpGained: number; goldGained: number }
   dismissLevelUp: () => void
+  dismissDevLevelUp: () => void
   dismissQuestComplete: () => void
   upgradeRank: () => boolean
   checkDailyQuestExpiry: () => void
@@ -306,6 +343,10 @@ interface GameState {
   addVegetables: (amount: number) => void
   claimFullNutritionRewards: () => void
   checkNutritionDailyReset: () => void
+  updateDevQuestProgress: (taskId: string, amount: number) => void
+  toggleJavaTopic: (topicId: string) => void
+  claimDevQuestRewards: () => void
+  checkDevDailyReset: () => void
 }
 
 // Load initial state from localstorage or use defaults
@@ -343,6 +384,24 @@ const defaultNutrition: PlayerNutrition = {
   lastUpdatedDate: new Date().toDateString()
 }
 
+const defaultDeveloper: PlayerDeveloperQuest = {
+  devLevel: 1,
+  devXp: 0,
+  devXpNeeded: 1000,
+  dsaSolved: 0,
+  aptitudeQuestions: 0,
+  codingStreak: 0,
+  projectHours: 0,
+  javaProgress: [],
+  lastClaimedDate: '',
+  achievements: [],
+  dailyJavaMin: 0,
+  dailyDsaSolved: 0,
+  dailyAptitudeSolved: 0,
+  dailyCommMin: 0,
+  dailyProjMin: 0
+}
+
 export const useGameStore = create<GameState>((set, get) => ({
   soundEnabled: getSavedState('sl_sound_enabled', true),
   player: (() => {
@@ -353,9 +412,14 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (saved.stats.health === undefined) saved.stats.health = 100
       if (saved.stats.recovery === undefined) saved.stats.recovery = 10
       if (saved.stats.energy === undefined) saved.stats.energy = 100
+      if (saved.stats.problemSolving === undefined) saved.stats.problemSolving = 10
+      if (saved.stats.communication === undefined) saved.stats.communication = 10
     }
     if (!saved.nutrition) {
       saved.nutrition = defaultNutrition
+    }
+    if (!saved.developer) {
+      saved.developer = defaultDeveloper
     }
     if (saved.name !== defaultHunters.name) {
       saved.name = defaultHunters.name
@@ -388,6 +452,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   dungeons: getSavedState('sl_dungeons', defaultDungeons as Dungeon[]),
   shadows: getSavedState('sl_shadows', defaultShadows),
   levelUpNotification: false,
+  devLevelUpNotification: false,
   questCompleteNotification: null,
 
   toggleSound: () => set((state) => {
@@ -401,7 +466,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     const updatedStats = {
       ...state.player.stats,
-      [statName]: state.player.stats[statName] + 1
+      [statName]: (state.player.stats[statName] || 0) + 1
     }
 
     const updatedPlayer = {
@@ -924,7 +989,184 @@ export const useGameStore = create<GameState>((set, get) => ({
   }),
 
   dismissLevelUp: () => set({ levelUpNotification: false }),
-  dismissQuestComplete: () => set({ questCompleteNotification: null })
+  dismissDevLevelUp: () => set({ devLevelUpNotification: false }),
+  dismissQuestComplete: () => set({ questCompleteNotification: null }),
+
+  updateDevQuestProgress: (taskId, amount) => set((state) => {
+    const dev = state.player.developer || defaultDeveloper
+    let dsaDiff = 0
+    let aptDiff = 0
+    let projDiff = 0
+
+    const updatedDev = { ...dev }
+
+    if (taskId === 'dailyJavaMin') {
+      updatedDev.dailyJavaMin = Math.max(0, Math.min(60, dev.dailyJavaMin + amount))
+    } else if (taskId === 'dailyDsaSolved') {
+      const oldDsa = dev.dailyDsaSolved
+      updatedDev.dailyDsaSolved = Math.max(0, Math.min(3, dev.dailyDsaSolved + amount))
+      dsaDiff = updatedDev.dailyDsaSolved - oldDsa
+    } else if (taskId === 'dailyAptitudeSolved') {
+      const oldApt = dev.dailyAptitudeSolved
+      updatedDev.dailyAptitudeSolved = Math.max(0, Math.min(20, dev.dailyAptitudeSolved + amount))
+      aptDiff = updatedDev.dailyAptitudeSolved - oldApt
+    } else if (taskId === 'dailyCommMin') {
+      updatedDev.dailyCommMin = Math.max(0, Math.min(10, dev.dailyCommMin + amount))
+    } else if (taskId === 'dailyProjMin') {
+      const oldProj = dev.dailyProjMin
+      updatedDev.dailyProjMin = Math.max(0, Math.min(60, dev.dailyProjMin + amount))
+      projDiff = updatedDev.dailyProjMin - oldProj
+    }
+
+    // Add to lifetime stats
+    updatedDev.dsaSolved += dsaDiff
+    updatedDev.aptitudeQuestions += aptDiff
+    updatedDev.projectHours = Number((updatedDev.projectHours + (projDiff / 60)).toFixed(2))
+
+    // Handle Achievements
+    const achievements = [...(updatedDev.achievements || [])]
+    if (updatedDev.dsaSolved >= 50 && !achievements.includes('code_hunter')) {
+      achievements.push('code_hunter')
+    }
+    if (updatedDev.dsaSolved >= 100 && !achievements.includes('algorithm_knight')) {
+      achievements.push('algorithm_knight')
+    }
+    if (updatedDev.javaProgress.length === 16 && !achievements.includes('java_master')) {
+      achievements.push('java_master')
+    }
+    const currentDay = getCurrentDayCount()
+    if (currentDay >= 90 && !achievements.includes('placement_monarch')) {
+      achievements.push('placement_monarch')
+    }
+    updatedDev.achievements = achievements
+
+    const updatedPlayer = {
+      ...state.player,
+      developer: updatedDev
+    }
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    return { player: updatedPlayer }
+  }),
+
+  toggleJavaTopic: (topicId) => set((state) => {
+    const dev = state.player.developer || defaultDeveloper
+    const javaProgress = [...dev.javaProgress]
+    const index = javaProgress.indexOf(topicId)
+    if (index >= 0) {
+      javaProgress.splice(index, 1)
+    } else {
+      javaProgress.push(topicId)
+    }
+
+    const updatedDev = { ...dev, javaProgress }
+    
+    // Check Java Master achievement
+    const achievements = [...(updatedDev.achievements || [])]
+    if (javaProgress.length === 16 && !achievements.includes('java_master')) {
+      achievements.push('java_master')
+    }
+    updatedDev.achievements = achievements
+
+    const updatedPlayer = {
+      ...state.player,
+      developer: updatedDev
+    }
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    return { player: updatedPlayer }
+  }),
+
+  claimDevQuestRewards: () => set((state) => {
+    const dev = state.player.developer || defaultDeveloper
+    const todayStr = new Date().toDateString()
+    if (dev.lastClaimedDate === todayStr) return {}
+
+    let newXp = dev.devXp + 200
+    let newLevel = dev.devLevel
+    let newXpNeeded = dev.devXpNeeded
+    let leveledUp = false
+
+    if (newXp >= newXpNeeded) {
+      newXp -= newXpNeeded
+      newLevel += 1
+      leveledUp = true
+    }
+
+    // Increase Stats: Intelligence +5, Problem Solving +5, Focus +5, Communication +5, Discipline +5
+    const updatedStats = {
+      ...state.player.stats,
+      intelligence: (state.player.stats.intelligence || 10) + 5,
+      problemSolving: (state.player.stats.problemSolving || 10) + 5,
+      focus: (state.player.stats.focus || 10) + 5,
+      communication: (state.player.stats.communication || 10) + 5,
+      discipline: (state.player.stats.discipline || 10) + 5
+    }
+
+    // Set daily completed flag to keep coding streak
+    localStorage.setItem('sl_dev_today_completed', 'true')
+
+    const updatedDev = {
+      ...dev,
+      devLevel: newLevel,
+      devXp: newXp,
+      devXpNeeded: newXpNeeded,
+      lastClaimedDate: todayStr
+    }
+
+    const updatedPlayer = {
+      ...state.player,
+      stats: updatedStats,
+      developer: updatedDev
+    }
+
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    return { 
+      player: updatedPlayer,
+      devLevelUpNotification: leveledUp
+    }
+  }),
+
+  checkDevDailyReset: () => set((state) => {
+    const todayStr = new Date().toDateString()
+    const lastDate = localStorage.getItem('sl_dev_last_date')
+
+    if (lastDate && lastDate !== todayStr) {
+      const dev = state.player.developer || defaultDeveloper
+      const todayCompletedYesterday = localStorage.getItem('sl_dev_today_completed') === 'true'
+
+      let newStreak = dev.codingStreak
+      if (todayCompletedYesterday) {
+        newStreak += 1
+      } else {
+        newStreak = 0
+      }
+
+      const updatedDev = {
+        ...dev,
+        dailyJavaMin: 0,
+        dailyDsaSolved: 0,
+        dailyAptitudeSolved: 0,
+        dailyCommMin: 0,
+        dailyProjMin: 0,
+        codingStreak: newStreak
+      }
+
+      const updatedPlayer = {
+        ...state.player,
+        developer: updatedDev
+      }
+
+      localStorage.setItem('sl_dev_today_completed', 'false')
+      localStorage.setItem('sl_dev_last_date', todayStr)
+      localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+
+      return { player: updatedPlayer }
+    }
+
+    if (!lastDate) {
+      localStorage.setItem('sl_dev_last_date', todayStr)
+    }
+    return {}
+  })
 }))
 
 // --- MongoDB Sync Middleware / Subscription ---

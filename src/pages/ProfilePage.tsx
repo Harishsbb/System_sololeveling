@@ -198,11 +198,11 @@ export const ProfilePage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(Object.keys(player.stats) as Array<keyof typeof player.stats>).map((key) => (
+              {(['strength', 'agility', 'intelligence', 'endurance', 'mana', 'focus', 'discipline', 'health', 'recovery', 'energy'] as const).map((key) => (
                 <StatCard
                   key={key}
                   name={statInfo[key].name}
-                  value={player.stats[key]}
+                  value={player.stats[key] || 10}
                   statKey={key}
                   description={statInfo[key].desc}
                   canUpgrade={player.statPoints > 0}

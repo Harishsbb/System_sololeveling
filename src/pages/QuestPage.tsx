@@ -143,6 +143,10 @@ export const QuestPage: React.FC = () => {
                   <li>Walking: 8000 Steps</li>
                   <li>Plank: 3 Minutes</li>
                   <li>Meditation: 10 Minutes</li>
+                  <li className="text-hunter-blue font-semibold">Hanging: 3 x 30s</li>
+                  <li className="text-hunter-blue font-semibold">Cobra Stretch: 3 x 30s</li>
+                  <li className="text-hunter-blue font-semibold">Cat-Cow Stretch: 2 Min</li>
+                  <li className="text-hunter-blue font-semibold">Wall Posture Hold: 3 Min</li>
                 </ul>
               </div>
 
@@ -163,6 +167,10 @@ export const QuestPage: React.FC = () => {
                   <li>Walking: 10000 Steps</li>
                   <li>Plank: 5 Minutes</li>
                   <li>Meditation: 15 Minutes</li>
+                  <li className="text-indigo-400 font-semibold">Hanging: 4 x 30s</li>
+                  <li className="text-indigo-400 font-semibold">Cobra Stretch: 4 x 30s</li>
+                  <li className="text-indigo-400 font-semibold">Cat-Cow Stretch: 3 Min</li>
+                  <li className="text-indigo-400 font-semibold">Wall Posture Hold: 5 Min</li>
                 </ul>
               </div>
 
@@ -183,6 +191,10 @@ export const QuestPage: React.FC = () => {
                   <li>Running: 5 KM</li>
                   <li>Plank: 10 Minutes</li>
                   <li>Meditation: 20 Minutes</li>
+                  <li className="text-hunter-purple font-semibold">Hanging: 5 x 30s</li>
+                  <li className="text-hunter-purple font-semibold">Cobra Stretch: 5 x 30s</li>
+                  <li className="text-hunter-purple font-semibold">Cat-Cow Stretch: 5 Min</li>
+                  <li className="text-hunter-purple font-semibold">Wall Posture Hold: 5 Min</li>
                 </ul>
               </div>
             </div>

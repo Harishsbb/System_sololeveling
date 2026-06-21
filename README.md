@@ -14,7 +14,67 @@
 | **DECIBEL ENGINE** | Web Audio API Synthetic Oscillators |
 | **TIMELINE SCHEMA** | 90-Day Hunter Transcendence Progression |
 
----
+---Update only the 90-Day Hunter Transformation Timeline cards.
+
+Do not create new page.
+Do not redesign existing UI.
+Do not change layout.
+
+Add posture mobility exercises inside each rank card.
+
+E Rank (Day 1-30):
+Current:
+Pushups: 30
+Squats: 50
+Walking: 8000 Steps
+Plank: 3 Minutes
+Meditation: 10 Minutes
+
+Add:
+Hanging: 3 x 30 seconds
+Cobra Stretch: 3 x 30 seconds
+Cat-Cow Stretch: 2 Minutes
+Wall Posture Hold: 3 Minutes
+
+
+B Rank (Day 31-60):
+Current:
+Pushups: 60
+Squats: 80
+Walking: 10000 Steps
+Plank: 5 Minutes
+Meditation: 15 Minutes
+
+Add:
+Hanging: 4 x 30 seconds
+Cobra Stretch: 4 x 30 seconds
+Cat-Cow Stretch: 3 Minutes
+Wall Posture Hold: 5 Minutes
+
+
+S Rank (Day 61-90):
+Current:
+Pushups: 100
+Squats: 100
+Running: 5 KM
+Plank: 10 Minutes
+Meditation: 20 Minutes
+
+Add:
+Hanging: 5 x 30 seconds
+Cobra Stretch: 5 x 30 seconds
+Cat-Cow Stretch: 5 Minutes
+Wall Posture Hold: 5 Minutes
+
+
+Purpose:
+Improve posture, mobility and flexibility.
+
+Do not mention guaranteed height increase.
+
+Use existing XP system and MongoDB Atlas data saving.
+
+Keep same Hunter System design.
 
 ## 🔮 THE COGNITIVE INTERFACE (UI)
 

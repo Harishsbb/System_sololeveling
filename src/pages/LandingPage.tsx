@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { Swords, User, Heart, Droplet, Zap, Users, Scroll, Dumbbell, Shield, Activity, ChevronRight } from 'lucide-react'
-import { useGameStore } from '../store/gameStore'
+import { useGameStore, getCurrentDayCount } from '../store/gameStore'
 
 export const LandingPage: React.FC = () => {
   const player = useGameStore((state) => state.player)
@@ -316,6 +316,119 @@ export const LandingPage: React.FC = () => {
           </div>
 
         </div>
+
+        {/* Developer Quest HUD Integration */}
+        {(() => {
+          const dev = player.developer || {
+            devLevel: 1,
+            devXp: 0,
+            devXpNeeded: 1000,
+            dsaSolved: 0,
+            aptitudeQuestions: 0,
+            codingStreak: 0,
+            projectHours: 0,
+            javaProgress: [],
+            achievements: []
+          }
+          const currentDay = getCurrentDayCount()
+          const devRank = currentDay <= 30 ? "E-Rank Foundation" : currentDay <= 60 ? "B-Rank Solver" : "S-Rank Monarch"
+          const devXpPercent = Math.min((dev.devXp / dev.devXpNeeded) * 100, 100)
+
+          const statsList = [
+            { label: 'Intelligence (INT)', value: player.stats.intelligence || 10, color: 'from-cyan-500 to-blue-500' },
+            { label: 'Problem Solving (PRB)', value: player.stats.problemSolving || 10, color: 'from-indigo-500 to-purple-500' },
+            { label: 'Focus (FCS)', value: player.stats.focus || 10, color: 'from-teal-500 to-emerald-500' },
+            { label: 'Communication (COM)', value: player.stats.communication || 10, color: 'from-blue-500 to-indigo-500' },
+            { label: 'Discipline (DIS)', value: player.stats.discipline || 10, color: 'from-purple-500 to-pink-500' }
+          ]
+
+          return (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 border-t border-slate-900 pt-6">
+              {/* Left Column: Dev HUD stats */}
+              <div className="lg:col-span-7 glass-panel p-5 rounded border border-hunter-blue/20 bg-hunter-bg/60 backdrop-blur-sm flex flex-col justify-between gap-4">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]" />
+                    <h3 className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">DEVELOPER HUNTER MONITOR</h3>
+                  </div>
+                  <span className="font-display text-[9px] font-bold text-slate-500 tracking-wider">SYSTEM VERSION: 2.1.0</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 font-display">
+                  <div className="p-3 rounded bg-slate-950/80 border border-slate-900 text-center">
+                    <span className="text-[8px] text-slate-500 uppercase tracking-widest block">DEV LEVEL</span>
+                    <span className="text-lg font-black text-cyan-400">LVL {dev.devLevel}</span>
+                  </div>
+                  <div className="p-3 rounded bg-slate-950/80 border border-slate-900 text-center">
+                    <span className="text-[8px] text-slate-500 uppercase tracking-widest block">CODING STREAK</span>
+                    <span className="text-lg font-black text-amber-400">🔥 {dev.codingStreak} DAYS</span>
+                  </div>
+                  <div className="p-3 rounded bg-slate-950/80 border border-slate-900 text-center">
+                    <span className="text-[8px] text-slate-500 uppercase tracking-widest block">DEV RANK</span>
+                    <span className="text-[10px] font-black text-indigo-400 block mt-1 uppercase truncate">{devRank}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 font-display text-[10px]">
+                  <div className="flex flex-col p-2 bg-slate-950/40 rounded border border-slate-900/50">
+                    <span className="text-slate-500">DSA Solved</span>
+                    <span className="text-white font-bold mt-0.5">{dev.dsaSolved} Problems</span>
+                  </div>
+                  <div className="flex flex-col p-2 bg-slate-950/40 rounded border border-slate-900/50">
+                    <span className="text-slate-500">Aptitude Count</span>
+                    <span className="text-white font-bold mt-0.5">{dev.aptitudeQuestions} Solved</span>
+                  </div>
+                  <div className="flex flex-col p-2 bg-slate-950/40 rounded border border-slate-900/50">
+                    <span className="text-slate-500">Project Hours</span>
+                    <span className="text-white font-bold mt-0.5">{dev.projectHours} Hrs</span>
+                  </div>
+                </div>
+
+                {/* Developer XP bar */}
+                <div className="font-display">
+                  <div className="flex justify-between items-baseline mb-1">
+                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Developer XP</span>
+                    <span className="text-[10px] text-cyan-400 font-black">{dev.devXp} / {dev.devXpNeeded} XP</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden p-[1px] border border-cyan-500/10">
+                    <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.5)] transition-all duration-500" style={{ width: `${devXpPercent}%` }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Skill XP Graph */}
+              <div className="lg:col-span-5 glass-panel p-5 rounded border border-hunter-blue/20 bg-hunter-bg/60 backdrop-blur-sm flex flex-col justify-between gap-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-800/80">
+                  <h3 className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">SKILL XP MATRIX</h3>
+                </div>
+
+                <div className="flex-grow flex flex-col gap-2.5 justify-center py-2 font-display text-[10px]">
+                  {statsList.map((st) => {
+                    const pct = Math.min((st.value / 150) * 100, 100) // max scale for graph viz is 150
+                    return (
+                      <div key={st.label}>
+                        <div className="flex justify-between text-[9px] mb-1 font-semibold">
+                          <span className="text-slate-400">{st.label}</span>
+                          <span className="text-cyan-400 font-bold">{st.value}</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-950 rounded-sm overflow-hidden p-[1px] border border-slate-900">
+                          <div className={`h-full bg-gradient-to-r ${st.color} rounded-sm transition-all duration-500`} style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <Link to="/skills">
+                  <button className="w-full py-2.5 rounded bg-cyan-950/20 hover:bg-cyan-500/15 border border-cyan-500/30 hover:border-cyan-500/60 text-cyan-400 hover:text-cyan-300 font-display font-black text-[10px] tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>ENTER SKILL QUEST STATION</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          )
+        })()}
 
       </div>
     </div>
