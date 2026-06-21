@@ -80,6 +80,49 @@ export const getCurrentDayCount = (): number => {
 }
 
 export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Quest => {
+  const today = new Date()
+  const dayOfWeek = today.getDay() // 0 = Sunday, 6 = Saturday, 1-5 = Mon-Fri
+
+  if (dayOfWeek === 0) {
+    // Sunday - Rest Day Quest
+    return {
+      id: "daily_training",
+      name: "Rest Day: Muscle Rebuilding",
+      description: "Recovery Day Activated. Muscles are rebuilding. Rest is a crucial phase of the system growth loop.",
+      type: "daily",
+      status: "completed", // Pre-completed to claim reward directly
+      tasks: [],
+      rewards: { xp: 100, statPoints: 0, gold: 50, box: "Recovery Elixir" }
+    }
+  }
+
+  if (dayOfWeek === 6) {
+    // Saturday - Active Recovery Quest
+    const tasksConfig = [
+      { id: 'walking', name: 'Walking (Steps)', target: 5000 },
+      { id: 'plank', name: 'Plank (Minutes)', target: 1 }
+    ]
+    const tasks = tasksConfig.map((cfg) => {
+      const existing = currentTasks?.find((t) => t.id === cfg.id)
+      return {
+        id: cfg.id,
+        name: cfg.name,
+        current: existing ? existing.current : 0,
+        target: cfg.target
+      }
+    })
+    return {
+      id: "daily_training",
+      name: "Active Recovery: Joint & Tendon Restoration",
+      description: "Focus on light movement to stimulate blood flow and facilitate cellular recovery.",
+      type: "daily",
+      status: "active",
+      tasks,
+      rewards: { xp: 100, statPoints: 1, gold: 100, box: "Minor Healing Potion" }
+    }
+  }
+
+  // Monday - Friday (Normal Daily Quest based on day count)
   let tasksConfig: { id: string; name: string; target: number }[] = []
   let rewards = { xp: 150, statPoints: 4, gold: 200, box: "Random Loot Box" }
   let name = ""
@@ -547,8 +590,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     let updatedQuests = state.quests
     
     if (lastActiveDate && lastActiveDate !== todayString) {
+      const lastDate = new Date(lastActiveDate)
+      const wasSunday = lastDate.getDay() === 0
+
       updatedQuests = state.quests.map((q) => {
         if (q.id === 'daily_training' && q.status === 'active') {
+          if (wasSunday) {
+            return q
+          }
           return { ...q, status: 'failed' as const }
         }
         return q

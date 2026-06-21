@@ -109,113 +109,127 @@ export const QuestCard: React.FC<QuestCardProps> = ({ quest }) => {
           </div>
 
           {/* Tasks Regimen */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {quest.tasks.map((task) => {
-              const isTaskDone = task.current >= task.target
-              const percentage = Math.min((task.current / task.target) * 100, 100)
+          {quest.tasks.length === 0 ? (
+            <div className="p-6 rounded border border-emerald-500/20 bg-emerald-950/5 flex flex-col items-center justify-center text-center gap-3">
+              <div className="relative w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(52,211,153,0.25)]">
+                <Sparkles className="w-8 h-8 text-emerald-400 animate-pulse" />
+              </div>
+              <h3 className="font-display text-base font-black text-emerald-400 uppercase tracking-widest">
+                Recovery Day Activated
+              </h3>
+              <p className="text-xs text-slate-300 font-sans max-w-sm">
+                Muscles are rebuilding. Rest is a crucial phase of the system growth loop.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {quest.tasks.map((task) => {
+                const isTaskDone = task.current >= task.target
+                const percentage = Math.min((task.current / task.target) * 100, 100)
 
-              return (
-                <div 
-                  key={task.id}
-                  className={`p-4 rounded border transition-all duration-300 ${
-                    isTaskDone 
-                      ? 'border-emerald-500/20 bg-emerald-950/5' 
-                      : 'border-slate-800 bg-slate-950/30'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-2">
-                      {isTaskDone ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      ) : (
-                        <Circle className="w-4 h-4 text-slate-600 shrink-0" />
-                      )}
-                      <div className="flex flex-col">
-                        <span className={`font-display text-xs md:text-sm font-bold tracking-wider ${isTaskDone ? 'text-emerald-400 line-through' : 'text-slate-200'}`}>
-                          {task.name}
-                        </span>
-                        <div className="mt-1">
-                          {isTaskDone ? (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded uppercase tracking-wider">
-                              CLEARED
-                            </span>
-                          ) : (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 bg-hunter-blue/10 border border-hunter-blue/30 text-hunter-blue rounded uppercase tracking-wider">
-                              {(task.target - task.current).toFixed(task.id === 'running' || task.id === 'plank' ? 1 : 0)} {
-                                task.id === 'walking' ? 'STEPS' :
-                                task.id === 'plank' ? 'MIN' :
-                                task.id === 'running' ? 'KM' : 'REPS'
-                              } REMAINING
-                            </span>
-                          )}
+                return (
+                  <div 
+                    key={task.id}
+                    className={`p-4 rounded border transition-all duration-300 ${
+                      isTaskDone 
+                        ? 'border-emerald-500/20 bg-emerald-950/5' 
+                        : 'border-slate-800 bg-slate-950/30'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2">
+                        {isTaskDone ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        ) : (
+                          <Circle className="w-4 h-4 text-slate-600 shrink-0" />
+                        )}
+                        <div className="flex flex-col">
+                          <span className={`font-display text-xs md:text-sm font-bold tracking-wider ${isTaskDone ? 'text-emerald-400 line-through' : 'text-slate-200'}`}>
+                            {task.name}
+                          </span>
+                          <div className="mt-1">
+                            {isTaskDone ? (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded uppercase tracking-wider">
+                                CLEARED
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 bg-hunter-blue/10 border border-hunter-blue/30 text-hunter-blue rounded uppercase tracking-wider">
+                                {(task.target - task.current).toFixed(task.id === 'running' || task.id === 'plank' ? 1 : 0)} {
+                                  task.id === 'walking' ? 'STEPS' :
+                                  task.id === 'plank' ? 'MIN' :
+                                  task.id === 'running' ? 'KM' : 'REPS'
+                                } REMAINING
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
+                      <div className="text-right flex items-baseline gap-1">
+                        <span className="font-display text-base font-black text-white">{task.current}</span>
+                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                          of {task.target}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right flex items-baseline gap-1">
-                      <span className="font-display text-base font-black text-white">{task.current}</span>
-                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
-                        of {task.target}
-                      </span>
+
+                    {/* Progress bar */}
+                    <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden mb-3">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percentage}%` }}
+                        className={`h-full ${isTaskDone ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-hunter-blue shadow-[0_0_8px_rgba(0,240,255,0.5)]'}`}
+                      />
                     </div>
+
+                    {/* Increment Buttons (Log workout) */}
+                    {quest.status === 'active' && (
+                      <div className="flex items-center gap-2 mt-2">
+                        {(() => {
+                          let increments = [
+                            { value: 5, label: '+5' },
+                            { value: 10, label: '+10' }
+                          ]
+                          if (task.id === 'walking') {
+                            increments = [
+                              { value: 500, label: '+500' },
+                              { value: 1000, label: '+1000' }
+                            ]
+                          } else if (task.id === 'plank') {
+                            increments = [
+                              { value: 0.5, label: '+30s' },
+                              { value: 1.0, label: '+1m' }
+                            ]
+                          } else if (task.id === 'running') {
+                            increments = [
+                              { value: 0.5, label: '+0.5' },
+                              { value: 1.0, label: '+1.0' }
+                            ]
+                          }
+
+                          return increments.map((inc, i) => (
+                            <button
+                              key={i}
+                              onClick={() => handleIncrement(task, inc.value)}
+                              className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-hunter-blue/40 text-slate-300 hover:text-white text-xs font-display flex items-center gap-1 cursor-pointer transition-all"
+                            >
+                              <Plus className="w-3 h-3" />
+                              {inc.label}
+                            </button>
+                          ))
+                        })()}
+                        <button
+                          onClick={() => updateQuestProgress(task.id, task.target)}
+                          className="ml-auto px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 text-xs font-display cursor-pointer transition-all"
+                        >
+                          Complete
+                        </button>
+                      </div>
+                    )}
                   </div>
-
-                  {/* Progress bar */}
-                  <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden mb-3">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${percentage}%` }}
-                      className={`h-full ${isTaskDone ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-hunter-blue shadow-[0_0_8px_rgba(0,240,255,0.5)]'}`}
-                    />
-                  </div>
-
-                  {/* Increment Buttons (Log workout) */}
-                  {quest.status === 'active' && (
-                    <div className="flex items-center gap-2 mt-2">
-                      {(() => {
-                        let increments = [
-                          { value: 5, label: '+5' },
-                          { value: 10, label: '+10' }
-                        ]
-                        if (task.id === 'walking') {
-                          increments = [
-                            { value: 500, label: '+500' },
-                            { value: 1000, label: '+1000' }
-                          ]
-                        } else if (task.id === 'plank') {
-                          increments = [
-                            { value: 0.5, label: '+30s' },
-                            { value: 1.0, label: '+1m' }
-                          ]
-                        } else if (task.id === 'running') {
-                          increments = [
-                            { value: 0.5, label: '+0.5' },
-                            { value: 1.0, label: '+1.0' }
-                          ]
-                        }
-
-                        return increments.map((inc, i) => (
-                          <button
-                            key={i}
-                            onClick={() => handleIncrement(task, inc.value)}
-                            className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-hunter-blue/40 text-slate-300 hover:text-white text-xs font-display flex items-center gap-1 cursor-pointer transition-all"
-                          >
-                            <Plus className="w-3 h-3" />
-                            {inc.label}
-                          </button>
-                        ))
-                      })()}
-                      <button
-                        onClick={() => updateQuestProgress(task.id, task.target)}
-                        className="ml-auto px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 text-xs font-display cursor-pointer transition-all"
-                      >
-                        Complete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
 
           {/* Quest Rewards Block */}
           <div className="p-4 rounded-lg bg-hunter-gray/30 border border-slate-800 mt-2 flex flex-col md:flex-row items-center justify-between gap-4">
