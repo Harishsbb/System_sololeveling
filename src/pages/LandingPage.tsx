@@ -97,9 +97,9 @@ export const LandingPage: React.FC = () => {
       </video>
 
       {/* Cinematic Overlays (Vignette, Blue-Black Gradients, Scanline overlays) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/75 to-transparent z-0 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/80 z-0 pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_30%,rgba(0,0,0,0.9)_90%)] z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/60 z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_45%,rgba(0,0,0,0.75)_90%)] z-0 pointer-events-none" />
       <div className="scanline-overlay pointer-events-none" />
 
       {/* Main Responsive Grid Wrapper */}
