@@ -56,14 +56,20 @@ export const SkillsPage: React.FC = () => {
     devXp: 0,
     devXpNeeded: 1000,
     dsaSolved: 0,
-    aptitudeQuestions: 0,
     codingStreak: 0,
     projectHours: 0,
     javaProgress: [],
+    dsaProgress: [],
+    frontendProgress: [],
+    backendProgress: [],
+    devopsProgress: [],
+    communicationMinutes: 0,
+    mockInterviewHistory: [],
+    projectProgress: [],
     achievements: [],
-    dailyJavaMin: 0,
-    dailyDsaSolved: 0,
-    dailyAptitudeSolved: 0,
+    dailyJavaDsaMin: 0,
+    dailyFullStackMin: 0,
+    dailyCodingProblems: 0,
     dailyCommMin: 0,
     dailyProjMin: 0,
     lastClaimedDate: ''
@@ -73,39 +79,47 @@ export const SkillsPage: React.FC = () => {
   const todayStr = new Date().toDateString()
   const devXpPercent = Math.min((dev.devXp / dev.devXpNeeded) * 100, 100)
 
-  // Java roadmap topics grouped by rank
-  const javaRoadmap = {
+  // Developer roadmap grouped by rank
+  const roadmap = {
     E: [
-      { id: 'variables', label: 'Variables & Data Types' },
-      { id: 'conditionals', label: 'Conditionals & Loops' },
-      { id: 'functions', label: 'Functions & Arrays' },
-      { id: 'strings', label: 'Strings Basics' },
-      { id: 'oop_intro', label: 'OOP Core Concepts' },
-      { id: 'collections_intro', label: 'Collections Intro' }
+      { id: 'variables', category: 'javaProgress', label: 'Java: Variables & Loops' },
+      { id: 'oop', category: 'javaProgress', label: 'Java: OOPs Principles' },
+      { id: 'arrays', category: 'dsaProgress', label: 'DSA: Arrays & Strings' },
+      { id: 'sorting', category: 'dsaProgress', label: 'DSA: Sorting & Searching' },
+      { id: 'self_intro', category: 'mockInterviewHistory', label: 'Comm: Self Introduction' }
     ],
     B: [
-      { id: 'exceptions', label: 'Exception Handling' },
-      { id: 'file_io', label: 'File Handling (I/O)' },
-      { id: 'jdbc', label: 'JDBC Database Access' },
-      { id: 'collections_adv', label: 'Advanced Collections' },
-      { id: 'multithreading', label: 'Multithreading Basics' }
+      { id: 'react_ts', category: 'frontendProgress', label: 'FS: React & TypeScript' },
+      { id: 'node_express', category: 'backendProgress', label: 'FS: Node.js & Express' },
+      { id: 'db_sql_nosql', category: 'backendProgress', label: 'FS: MongoDB & MySQL' },
+      { id: 'dsa_recursion', category: 'dsaProgress', label: 'DSA: Recursion & LL' },
+      { id: 'dsa_stacks', category: 'dsaProgress', label: 'DSA: Stack & Queue' },
+      { id: 'proj_build', category: 'projectProgress', label: 'Project: Core Building' },
+      { id: 'gd_practice', category: 'mockInterviewHistory', label: 'Comm: GD & Explanation' }
     ],
     S: [
-      { id: 'java8', label: 'Java 8 Lambdas & Streams' },
-      { id: 'jvm', label: 'JVM Architecture & Memory' },
-      { id: 'interview_rev', label: 'Interview Coding Revision' },
-      { id: 'design_patterns', label: 'Design Patterns' },
-      { id: 'mock_tests', label: 'Mock Practical Coding' }
+      { id: 'devops_cicd', category: 'devopsProgress', label: 'FS: DevOps & CI/CD' },
+      { id: 'aws_cloud', category: 'devopsProgress', label: 'FS: AWS Services' },
+      { id: 'dsa_trees', category: 'dsaProgress', label: 'DSA: Trees & Graphs' },
+      { id: 'dsa_dp', category: 'dsaProgress', label: 'DSA: Greedy & DP' },
+      { id: 'proj_deploy', category: 'projectProgress', label: 'Project: Deployment' },
+      { id: 'mock_evals', category: 'mockInterviewHistory', label: 'Comm: Mock Interview' }
     ]
   }
 
   // Check if daily quest is completed
   const isDailyQuestComplete = 
-    dev.dailyJavaMin >= 60 &&
-    dev.dailyDsaSolved >= 3 &&
-    dev.dailyAptitudeSolved >= 20 &&
-    dev.dailyCommMin >= 10 &&
-    dev.dailyProjMin >= 60
+    (dev.dailyJavaDsaMin || 0) >= 90 &&
+    (dev.dailyFullStackMin || 0) >= 120 &&
+    (dev.dailyCodingProblems || 0) >= 3 &&
+    (dev.dailyCommMin || 0) >= 20 &&
+    (dev.dailyProjMin || 0) >= 60
+
+  const getDevRank = (day: number) => {
+    if (day <= 30) return "Foundation Hunter (E-Rank)"
+    if (day <= 60) return "Full Stack Hunter (B-Rank)"
+    return "Full Stack Monarch (S-Rank)"
+  }
 
   const hasClaimedToday = dev.lastClaimedDate === todayStr
 
@@ -312,6 +326,38 @@ export const SkillsPage: React.FC = () => {
               </div>
             </SystemWindow>
 
+            {/* Developer Stats Dashboard Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-display text-[10px] mb-2">
+              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
+                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Developer Level</span>
+                <span className="text-xs font-black text-cyan-400 mt-0.5">LVL {dev.devLevel}</span>
+              </div>
+              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
+                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Current Rank</span>
+                <span className="text-[9px] font-black text-indigo-400 mt-0.5 uppercase truncate">{getDevRank(currentDay)}</span>
+              </div>
+              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
+                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">DSA Count</span>
+                <span className="text-xs font-black text-emerald-400 mt-0.5">{dev.dsaSolved || 0} SOLVED</span>
+              </div>
+              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
+                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Project Count</span>
+                <span className="text-xs font-black text-amber-400 mt-0.5">{(dev.projectProgress || []).length} COMPLETED</span>
+              </div>
+              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
+                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Comm Level</span>
+                <span className="text-xs font-black text-blue-400 mt-0.5">LVL {Math.min(5, Math.floor((dev.communicationMinutes || 0) / 100) + 1)}</span>
+              </div>
+              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
+                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Coding Streak</span>
+                <span className="text-xs font-black text-orange-400 mt-0.5">🔥 {dev.codingStreak} DAYS</span>
+              </div>
+              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px] col-span-2">
+                <span className="text-slate-500 tracking-wider block text-[7.5px] uppercase">Mock Interviews</span>
+                <span className="text-xs font-black text-purple-400 mt-0.5">{(dev.mockInterviewHistory || []).length} COMPLETED</span>
+              </div>
+            </div>
+
             {/* Daily Quest Log HUD */}
             <div className="glass-panel p-6 rounded-lg border border-cyan-400/20 bg-hunter-bg/80 relative overflow-hidden flex flex-col gap-6">
               <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
@@ -324,91 +370,91 @@ export const SkillsPage: React.FC = () => {
 
               {/* Tasks List */}
               <div className="flex flex-col gap-4 font-display text-xs">
-                {/* 1. Java Training */}
+                {/* 1. Java + DSA Quest */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
                   <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">💻 Java Training</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyJavaMin} / 60 Mins</span>
+                      <span className="font-bold text-white uppercase tracking-wider">💻 Java + DSA Quest</span>
+                      <span className="text-cyan-400 font-bold">{dev.dailyJavaDsaMin || 0} / 90 Mins</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min((dev.dailyJavaMin / 60) * 100, 100)}%` }} />
+                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyJavaDsaMin || 0) / 90) * 100, 100)}%` }} />
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyJavaMin', 10); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+10m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyJavaMin', 30); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+30m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyJavaMin', 60 - dev.dailyJavaMin); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyJavaDsaMin', 15); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+15m</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyJavaDsaMin', 30); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+30m</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyJavaDsaMin', 90 - (dev.dailyJavaDsaMin || 0)); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
                   </div>
                 </div>
 
-                {/* 2. DSA Battle */}
+                {/* 2. Full Stack Quest */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
                   <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">⚔️ DSA Battle</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyDsaSolved} / 3 Problems</span>
+                      <span className="font-bold text-white uppercase tracking-wider">🚀 Full Stack Quest</span>
+                      <span className="text-cyan-400 font-bold">{dev.dailyFullStackMin || 0} / 120 Mins</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min((dev.dailyDsaSolved / 3) * 100, 100)}%` }} />
+                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyFullStackMin || 0) / 120) * 100, 100)}%` }} />
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyDsaSolved', 1); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+1 DSA</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyDsaSolved', 3 - dev.dailyDsaSolved); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyFullStackMin', 30); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+30m</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyFullStackMin', 60); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+60m</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyFullStackMin', 120 - (dev.dailyFullStackMin || 0)); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
                   </div>
                 </div>
 
-                {/* 3. Aptitude Training */}
+                {/* 3. Coding Battle */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
                   <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">🧠 Aptitude Training</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyAptitudeSolved} / 20 Questions</span>
+                      <span className="font-bold text-white uppercase tracking-wider">⚔️ Coding Battle</span>
+                      <span className="text-cyan-400 font-bold">{dev.dailyCodingProblems || 0} / 3 Problems</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min((dev.dailyAptitudeSolved / 20) * 100, 100)}%` }} />
+                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyCodingProblems || 0) / 3) * 100, 100)}%` }} />
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyAptitudeSolved', 5); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+5 Qs</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyAptitudeSolved', 10); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+10 Qs</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyAptitudeSolved', 20 - dev.dailyAptitudeSolved); }} className="px-3 py-1.5 bg-cyan-955/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyCodingProblems', 1); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+1 Problem</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyCodingProblems', 3 - (dev.dailyCodingProblems || 0)); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
                   </div>
                 </div>
 
-                {/* 4. Communication */}
+                {/* 4. Communication Quest */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
                   <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">🎤 Communication Practice</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyCommMin} / 10 Mins</span>
+                      <span className="font-bold text-white uppercase tracking-wider">🎤 Communication Quest</span>
+                      <span className="text-cyan-400 font-bold">{dev.dailyCommMin || 0} / 20 Mins</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min((dev.dailyCommMin / 10) * 100, 100)}%` }} />
+                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyCommMin || 0) / 20) * 100, 100)}%` }} />
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <button onClick={() => { playClick(); updateDevQuestProgress('dailyCommMin', 5); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+5m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyCommMin', 10 - dev.dailyCommMin); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyCommMin', 20 - (dev.dailyCommMin || 0)); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
                   </div>
                 </div>
 
-                {/* 5. Project Building */}
+                {/* 5. Project Quest */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
                   <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">🚀 Project Building</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyProjMin} / 60 Mins</span>
+                      <span className="font-bold text-white uppercase tracking-wider">🚀 Project Quest</span>
+                      <span className="text-cyan-400 font-bold">{dev.dailyProjMin || 0} / 60 Mins</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min((dev.dailyProjMin / 60) * 100, 100)}%` }} />
+                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyProjMin || 0) / 60) * 100, 100)}%` }} />
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <button onClick={() => { playClick(); updateDevQuestProgress('dailyProjMin', 10); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+10m</button>
                     <button onClick={() => { playClick(); updateDevQuestProgress('dailyProjMin', 30); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+30m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyProjMin', 60 - dev.dailyProjMin); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
+                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyProjMin', 60 - (dev.dailyProjMin || 0)); }} className="px-3 py-1.5 bg-cyan-955/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
                   </div>
                 </div>
               </div>
@@ -455,17 +501,19 @@ export const SkillsPage: React.FC = () => {
                   {currentDay > 30 && <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500/25 border border-emerald-500 text-[8px] font-display font-bold text-emerald-400 uppercase">COMPLETED</div>}
                   <div>
                     <div className="flex justify-between items-center pb-2 border-b border-slate-900 mb-3">
-                      <span className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">E RANK (DAY 1-30)</span>
+                      <span className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">E RANK: FOUNDATION HUNTER</span>
+                      <span className="text-[9px] text-slate-500 font-display">DAY 1-30</span>
                     </div>
 
                     <div className="flex flex-col gap-4 font-sans text-xs">
                       <div>
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">JAVA SYLLABUS ROADMAP</span>
+                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">FOUNDATION ROADMAP</span>
                         <div className="flex flex-col gap-1.5 mt-2">
-                          {javaRoadmap.E.map(item => {
-                            const isDone = dev.javaProgress.includes(item.id)
+                          {roadmap.E.map(item => {
+                            const progressList = dev[item.category as keyof typeof dev] as string[]
+                            const isDone = Array.isArray(progressList) && progressList.includes(item.id)
                             return (
-                              <button key={item.id} onClick={() => { playClick(); toggleJavaTopic(item.id); }} className="flex items-center gap-2 text-left cursor-pointer hover:text-cyan-300 transition-colors w-full group">
+                              <button key={item.id} onClick={() => { playClick(); toggleJavaTopic(item.id, item.category as any); }} className="flex items-center gap-2 text-left cursor-pointer hover:text-cyan-300 transition-colors w-full group">
                                 {isDone ? <CheckSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> : <Square className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 shrink-0" />}
                                 <span className={`text-[11px] ${isDone ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{item.label}</span>
                               </button>
@@ -475,13 +523,13 @@ export const SkillsPage: React.FC = () => {
                       </div>
 
                       <div className="border-t border-slate-900/60 pt-3">
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">CORE DSA CURRICULUM</span>
-                        <p className="text-[11px] text-slate-300 mt-1">Time Complexity, Arrays, Strings, Sorting, Searching</p>
-                      </div>
-
-                      <div className="border-t border-slate-900/60 pt-3">
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">APTITUDE & SPEAKING</span>
-                        <p className="text-[11px] text-slate-300 mt-1">Percentage, Ratio, Average, Self Introduction, speaking basics</p>
+                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">POSTURE MOBILITY ROUTINE</span>
+                        <p className="text-[11px] text-slate-450 mt-1 leading-normal">
+                          • Hanging: 3 x 30s<br />
+                          • Cobra Stretch: 3 x 30s<br />
+                          • Cat-Cow: 2 Minutes<br />
+                          • Wall Posture Hold: 3 Minutes
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -490,11 +538,7 @@ export const SkillsPage: React.FC = () => {
                     <span className="text-[9px] text-slate-500 uppercase tracking-wider block">QUEST TARGET PROGRESS</span>
                     <div className="flex justify-between items-center text-[10px] text-slate-300 mt-1">
                       <span>DSA Problems (50):</span>
-                      <span className={dev.dsaSolved >= 50 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.dsaSolved} / 50</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] text-slate-300 mt-0.5">
-                      <span>Aptitude (300):</span>
-                      <span className={dev.aptitudeQuestions >= 300 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.aptitudeQuestions} / 300</span>
+                      <span className={dev.dsaSolved >= 50 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.dsaSolved || 0} / 50</span>
                     </div>
                   </div>
                 </div>
@@ -507,17 +551,19 @@ export const SkillsPage: React.FC = () => {
                   {currentDay <= 30 && <div className="absolute top-2 right-2 text-[8px] font-display font-black text-slate-700 flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> LOCKED</div>}
                   <div>
                     <div className="flex justify-between items-center pb-2 border-b border-slate-900 mb-3">
-                      <span className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">B RANK (DAY 31-60)</span>
+                      <span className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">B RANK: FULL STACK HUNTER</span>
+                      <span className="text-[9px] text-slate-500 font-display">DAY 31-60</span>
                     </div>
 
                     <div className="flex flex-col gap-4 font-sans text-xs">
                       <div>
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">JAVA SYLLABUS ROADMAP</span>
+                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">FULL STACK ROADMAP</span>
                         <div className="flex flex-col gap-1.5 mt-2">
-                          {javaRoadmap.B.map(item => {
-                            const isDone = dev.javaProgress.includes(item.id)
+                          {roadmap.B.map(item => {
+                            const progressList = dev[item.category as keyof typeof dev] as string[]
+                            const isDone = Array.isArray(progressList) && progressList.includes(item.id)
                             return (
-                              <button key={item.id} onClick={() => { playClick(); toggleJavaTopic(item.id); }} className="flex items-center gap-2 text-left cursor-pointer hover:text-cyan-300 transition-colors w-full group">
+                              <button key={item.id} onClick={() => { playClick(); toggleJavaTopic(item.id, item.category as any); }} className="flex items-center gap-2 text-left cursor-pointer hover:text-cyan-300 transition-colors w-full group">
                                 {isDone ? <CheckSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> : <Square className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 shrink-0" />}
                                 <span className={`text-[11px] ${isDone ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{item.label}</span>
                               </button>
@@ -527,13 +573,13 @@ export const SkillsPage: React.FC = () => {
                       </div>
 
                       <div className="border-t border-slate-900/60 pt-3">
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">CORE DSA CURRICULUM</span>
-                        <p className="text-[11px] text-slate-300 mt-1">Binary Search, Recursion, Sliding Window, Linked List, Stack, Queue</p>
-                      </div>
-
-                      <div className="border-t border-slate-900/60 pt-3">
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">APTITUDE & GD PRACTICE</span>
-                        <p className="text-[11px] text-slate-300 mt-1">Time & Work, Speed & Distance, GD Mock, Project explanation</p>
+                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">POSTURE MOBILITY ROUTINE</span>
+                        <p className="text-[11px] text-slate-450 mt-1 leading-normal">
+                          • Hanging: 4 x 30s<br />
+                          • Cobra Stretch: 4 x 30s<br />
+                          • Cat-Cow: 3 Minutes<br />
+                          • Wall Posture Hold: 5 Minutes
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -542,11 +588,7 @@ export const SkillsPage: React.FC = () => {
                     <span className="text-[9px] text-slate-500 uppercase tracking-wider block">QUEST TARGET PROGRESS</span>
                     <div className="flex justify-between items-center text-[10px] text-slate-300 mt-1">
                       <span>DSA Problems (100):</span>
-                      <span className={dev.dsaSolved >= 100 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.dsaSolved} / 100</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] text-slate-300 mt-0.5">
-                      <span>Aptitude (700):</span>
-                      <span className={dev.aptitudeQuestions >= 700 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.aptitudeQuestions} / 700</span>
+                      <span className={dev.dsaSolved >= 100 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.dsaSolved || 0} / 100</span>
                     </div>
                   </div>
                 </div>
@@ -558,17 +600,19 @@ export const SkillsPage: React.FC = () => {
                   {currentDay <= 60 && <div className="absolute top-2 right-2 text-[8px] font-display font-black text-slate-700 flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> LOCKED</div>}
                   <div>
                     <div className="flex justify-between items-center pb-2 border-b border-slate-900 mb-3">
-                      <span className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">S RANK (DAY 61-90)</span>
+                      <span className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">S RANK: FULL STACK MONARCH</span>
+                      <span className="text-[9px] text-slate-500 font-display">DAY 61-90</span>
                     </div>
 
                     <div className="flex flex-col gap-4 font-sans text-xs">
                       <div>
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">JAVA SYLLABUS ROADMAP</span>
+                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">MONARCH ROADMAP</span>
                         <div className="flex flex-col gap-1.5 mt-2">
-                          {javaRoadmap.S.map(item => {
-                            const isDone = dev.javaProgress.includes(item.id)
+                          {roadmap.S.map(item => {
+                            const progressList = dev[item.category as keyof typeof dev] as string[]
+                            const isDone = Array.isArray(progressList) && progressList.includes(item.id)
                             return (
-                              <button key={item.id} onClick={() => { playClick(); toggleJavaTopic(item.id); }} className="flex items-center gap-2 text-left cursor-pointer hover:text-cyan-300 transition-colors w-full group">
+                              <button key={item.id} onClick={() => { playClick(); toggleJavaTopic(item.id, item.category as any); }} className="flex items-center gap-2 text-left cursor-pointer hover:text-cyan-300 transition-colors w-full group">
                                 {isDone ? <CheckSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> : <Square className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 shrink-0" />}
                                 <span className={`text-[11px] ${isDone ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{item.label}</span>
                               </button>
@@ -578,13 +622,13 @@ export const SkillsPage: React.FC = () => {
                       </div>
 
                       <div className="border-t border-slate-900/60 pt-3">
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">CORE DSA CURRICULUM</span>
-                        <p className="text-[11px] text-slate-300 mt-1">Trees, Graph BFS/DFS, Greedy, Dynamic Programming Basics</p>
-                      </div>
-
-                      <div className="border-t border-slate-900/60 pt-3">
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">INTERVIEW SIMULATIONS</span>
-                        <p className="text-[11px] text-slate-300 mt-1">Technical Mock Interviews, HR Mock Rounds, Mock evaluations</p>
+                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">POSTURE MOBILITY ROUTINE</span>
+                        <p className="text-[11px] text-slate-455 mt-1 leading-normal">
+                          • Hanging: 5 x 30s<br />
+                          • Cobra Stretch: 5 x 30s<br />
+                          • Cat-Cow: 5 Minutes<br />
+                          • Wall Posture Hold: 5 Minutes
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -593,11 +637,7 @@ export const SkillsPage: React.FC = () => {
                     <span className="text-[9px] text-slate-500 uppercase tracking-wider block">QUEST TARGET PROGRESS</span>
                     <div className="flex justify-between items-center text-[10px] text-slate-300 mt-1">
                       <span>DSA Problems (150):</span>
-                      <span className={dev.dsaSolved >= 150 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.dsaSolved} / 150</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] text-slate-300 mt-0.5">
-                      <span>Aptitude (1000):</span>
-                      <span className={dev.aptitudeQuestions >= 1000 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.aptitudeQuestions} / 1000</span>
+                      <span className={dev.dsaSolved >= 150 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.dsaSolved || 0} / 150</span>
                     </div>
                   </div>
                 </div>
@@ -605,8 +645,109 @@ export const SkillsPage: React.FC = () => {
               </div>
             </div>
 
+            {/* System Study Resources & Database */}
+            <div className="flex flex-col gap-6 mt-6">
+              <h4 className="font-display text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                <BookOpen className="w-4 h-4 text-cyan-400" />
+                SYSTEM STUDY RESOURCES & DATABASE
+              </h4>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 font-display">
+                <a 
+                  href="https://docs.oracle.com/en/java/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">Java Syllabus</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ ORACLE DOCS ]</span>
+                </a>
+                <a 
+                  href="https://takeuforward.org/strivers-a2z-dsa-course-sheet-instructions/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">DSA Prep Sheet</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ STRIVER A2Z ]</span>
+                </a>
+                <a 
+                  href="https://react.dev" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">React Docs</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ REACT.DEV ]</span>
+                </a>
+                <a 
+                  href="https://www.typescriptlang.org/docs/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">TS Handbook</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ TS LANG ]</span>
+                </a>
+                <a 
+                  href="https://nodejs.org/en/docs/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">Node.js Docs</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ NODEJS.ORG ]</span>
+                </a>
+                <a 
+                  href="https://expressjs.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">Express.js</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ EXPRESSJS ]</span>
+                </a>
+                <a 
+                  href="https://www.mongodb.com/docs/manual/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">MongoDB Manual</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ MONGODB ]</span>
+                </a>
+                <a 
+                  href="https://dev.mysql.com/doc/refman/8.0/en/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">MySQL Ref</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ MYSQL.COM ]</span>
+                </a>
+                <a 
+                  href="https://roadmap.sh/devops" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">DevOps Map</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ ROADMAP.SH ]</span>
+                </a>
+                <a 
+                  href="https://docs.aws.amazon.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
+                >
+                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">AWS Docs</span>
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ AWS AMAZON ]</span>
+                </a>
+              </div>
+            </div>
+
             {/* Achievements Badges Panel */}
-            <div className="flex flex-col gap-6 mt-4">
+            <div className="flex flex-col gap-6 mt-6">
               <h4 className="font-display text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                 <Trophy className="w-4 h-4 text-cyan-400" />
                 Developer Achievements Log

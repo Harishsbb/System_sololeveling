@@ -23,19 +23,31 @@ export interface PlayerDeveloperQuest {
   devXp: number
   devXpNeeded: number
   dsaSolved: number
-  aptitudeQuestions: number
   codingStreak: number
   projectHours: number
   javaProgress: string[]
+  dsaProgress: string[]
+  frontendProgress: string[]
+  backendProgress: string[]
+  devopsProgress: string[]
+  communicationMinutes: number
+  mockInterviewHistory: string[]
+  projectProgress: string[]
   lastClaimedDate: string
   achievements: string[]
   
   // Daily progress
-  dailyJavaMin: number
-  dailyDsaSolved: number
-  dailyAptitudeSolved: number
+  dailyJavaDsaMin: number
+  dailyFullStackMin: number
+  dailyCodingProblems: number
   dailyCommMin: number
   dailyProjMin: number
+
+  // Fallbacks for compatibility
+  aptitudeQuestions?: number
+  dailyJavaMin?: number
+  dailyDsaSolved?: number
+  dailyAptitudeSolved?: number
 }
 
 export interface PlayerNutrition {
@@ -344,7 +356,7 @@ interface GameState {
   claimFullNutritionRewards: () => void
   checkNutritionDailyReset: () => void
   updateDevQuestProgress: (taskId: string, amount: number) => void
-  toggleJavaTopic: (topicId: string) => void
+  toggleJavaTopic: (topicId: string, category?: string) => void
   claimDevQuestRewards: () => void
   checkDevDailyReset: () => void
   resetSystem: () => Promise<void>
@@ -390,17 +402,27 @@ const defaultDeveloper: PlayerDeveloperQuest = {
   devXp: 0,
   devXpNeeded: 1000,
   dsaSolved: 0,
-  aptitudeQuestions: 0,
   codingStreak: 0,
   projectHours: 0,
   javaProgress: [],
+  dsaProgress: [],
+  frontendProgress: [],
+  backendProgress: [],
+  devopsProgress: [],
+  communicationMinutes: 0,
+  mockInterviewHistory: [],
+  projectProgress: [],
   lastClaimedDate: '',
   achievements: [],
+  dailyJavaDsaMin: 0,
+  dailyFullStackMin: 0,
+  dailyCodingProblems: 0,
+  dailyCommMin: 0,
+  dailyProjMin: 0,
+  aptitudeQuestions: 0,
   dailyJavaMin: 0,
   dailyDsaSolved: 0,
-  dailyAptitudeSolved: 0,
-  dailyCommMin: 0,
-  dailyProjMin: 0
+  dailyAptitudeSolved: 0
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -996,33 +1018,33 @@ export const useGameStore = create<GameState>((set, get) => ({
   updateDevQuestProgress: (taskId, amount) => set((state) => {
     const dev = state.player.developer || defaultDeveloper
     let dsaDiff = 0
-    let aptDiff = 0
+    let commDiff = 0
     let projDiff = 0
 
     const updatedDev = { ...dev }
 
-    if (taskId === 'dailyJavaMin') {
-      updatedDev.dailyJavaMin = Math.max(0, Math.min(60, dev.dailyJavaMin + amount))
-    } else if (taskId === 'dailyDsaSolved') {
-      const oldDsa = dev.dailyDsaSolved
-      updatedDev.dailyDsaSolved = Math.max(0, Math.min(3, dev.dailyDsaSolved + amount))
-      dsaDiff = updatedDev.dailyDsaSolved - oldDsa
-    } else if (taskId === 'dailyAptitudeSolved') {
-      const oldApt = dev.dailyAptitudeSolved
-      updatedDev.dailyAptitudeSolved = Math.max(0, Math.min(20, dev.dailyAptitudeSolved + amount))
-      aptDiff = updatedDev.dailyAptitudeSolved - oldApt
+    if (taskId === 'dailyJavaDsaMin') {
+      updatedDev.dailyJavaDsaMin = Math.max(0, Math.min(90, (dev.dailyJavaDsaMin || 0) + amount))
+    } else if (taskId === 'dailyFullStackMin') {
+      updatedDev.dailyFullStackMin = Math.max(0, Math.min(120, (dev.dailyFullStackMin || 0) + amount))
+    } else if (taskId === 'dailyCodingProblems') {
+      const oldDsa = dev.dailyCodingProblems || 0
+      updatedDev.dailyCodingProblems = Math.max(0, Math.min(3, (dev.dailyCodingProblems || 0) + amount))
+      dsaDiff = updatedDev.dailyCodingProblems - oldDsa
     } else if (taskId === 'dailyCommMin') {
-      updatedDev.dailyCommMin = Math.max(0, Math.min(10, dev.dailyCommMin + amount))
+      const oldComm = dev.dailyCommMin || 0
+      updatedDev.dailyCommMin = Math.max(0, Math.min(20, (dev.dailyCommMin || 0) + amount))
+      commDiff = updatedDev.dailyCommMin - oldComm
     } else if (taskId === 'dailyProjMin') {
-      const oldProj = dev.dailyProjMin
-      updatedDev.dailyProjMin = Math.max(0, Math.min(60, dev.dailyProjMin + amount))
+      const oldProj = dev.dailyProjMin || 0
+      updatedDev.dailyProjMin = Math.max(0, Math.min(60, (dev.dailyProjMin || 0) + amount))
       projDiff = updatedDev.dailyProjMin - oldProj
     }
 
     // Add to lifetime stats
-    updatedDev.dsaSolved += dsaDiff
-    updatedDev.aptitudeQuestions += aptDiff
-    updatedDev.projectHours = Number((updatedDev.projectHours + (projDiff / 60)).toFixed(2))
+    updatedDev.dsaSolved = (updatedDev.dsaSolved || 0) + dsaDiff
+    updatedDev.communicationMinutes = (updatedDev.communicationMinutes || 0) + commDiff
+    updatedDev.projectHours = Number(((updatedDev.projectHours || 0) + (projDiff / 60)).toFixed(2))
 
     // Handle Achievements
     const achievements = [...(updatedDev.achievements || [])]
@@ -1032,7 +1054,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (updatedDev.dsaSolved >= 100 && !achievements.includes('algorithm_knight')) {
       achievements.push('algorithm_knight')
     }
-    if (updatedDev.javaProgress.length === 16 && !achievements.includes('java_master')) {
+    if ((updatedDev.javaProgress?.length || 0) >= 16 && !achievements.includes('java_master')) {
       achievements.push('java_master')
     }
     const currentDay = getCurrentDayCount()
@@ -1049,21 +1071,22 @@ export const useGameStore = create<GameState>((set, get) => ({
     return { player: updatedPlayer }
   }),
 
-  toggleJavaTopic: (topicId) => set((state) => {
+  toggleJavaTopic: (topicId, category = 'javaProgress') => set((state) => {
     const dev = state.player.developer || defaultDeveloper
-    const javaProgress = [...dev.javaProgress]
-    const index = javaProgress.indexOf(topicId)
+    const catKey = category as keyof PlayerDeveloperQuest
+    const currentArray = Array.isArray(dev[catKey]) ? [...(dev[catKey] as string[])] : []
+    const index = currentArray.indexOf(topicId)
     if (index >= 0) {
-      javaProgress.splice(index, 1)
+      currentArray.splice(index, 1)
     } else {
-      javaProgress.push(topicId)
+      currentArray.push(topicId)
     }
 
-    const updatedDev = { ...dev, javaProgress }
+    const updatedDev = { ...dev, [catKey]: currentArray }
     
     // Check Java Master achievement
     const achievements = [...(updatedDev.achievements || [])]
-    if (javaProgress.length === 16 && !achievements.includes('java_master')) {
+    if ((updatedDev.javaProgress?.length || 0) >= 16 && !achievements.includes('java_master')) {
       achievements.push('java_master')
     }
     updatedDev.achievements = achievements
@@ -1143,9 +1166,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 
       const updatedDev = {
         ...dev,
-        dailyJavaMin: 0,
-        dailyDsaSolved: 0,
-        dailyAptitudeSolved: 0,
+        dailyJavaDsaMin: 0,
+        dailyFullStackMin: 0,
+        dailyCodingProblems: 0,
         dailyCommMin: 0,
         dailyProjMin: 0,
         codingStreak: newStreak

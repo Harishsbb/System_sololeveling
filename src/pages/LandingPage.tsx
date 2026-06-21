@@ -324,14 +324,25 @@ export const LandingPage: React.FC = () => {
             devXp: 0,
             devXpNeeded: 1000,
             dsaSolved: 0,
-            aptitudeQuestions: 0,
             codingStreak: 0,
             projectHours: 0,
             javaProgress: [],
+            dsaProgress: [],
+            frontendProgress: [],
+            backendProgress: [],
+            devopsProgress: [],
+            communicationMinutes: 0,
+            mockInterviewHistory: [],
+            projectProgress: [],
             achievements: []
           }
           const currentDay = getCurrentDayCount()
-          const devRank = currentDay <= 30 ? "E-Rank Foundation" : currentDay <= 60 ? "B-Rank Solver" : "S-Rank Monarch"
+          const getDevRank = (day: number) => {
+            if (day <= 30) return "Foundation Hunter (E-Rank)"
+            if (day <= 60) return "Full Stack Hunter (B-Rank)"
+            return "Full Stack Monarch (S-Rank)"
+          }
+          const devRank = getDevRank(currentDay)
           const devXpPercent = Math.min((dev.devXp / dev.devXpNeeded) * 100, 100)
 
           const statsList = [
@@ -351,7 +362,7 @@ export const LandingPage: React.FC = () => {
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]" />
                     <h3 className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">DEVELOPER HUNTER MONITOR</h3>
                   </div>
-                  <span className="font-display text-[9px] font-bold text-slate-500 tracking-wider">SYSTEM VERSION: 2.1.0</span>
+                  <span className="font-display text-[9px] font-bold text-slate-500 tracking-wider">SYSTEM VERSION: 3.0.0</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 font-display">
@@ -369,18 +380,22 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 font-display text-[10px]">
+                <div className="grid grid-cols-4 gap-2 font-display text-[9px]">
                   <div className="flex flex-col p-2 bg-slate-950/40 rounded border border-slate-900/50">
-                    <span className="text-slate-500">DSA Solved</span>
-                    <span className="text-white font-bold mt-0.5">{dev.dsaSolved} Problems</span>
+                    <span className="text-slate-500 uppercase">DSA Solved</span>
+                    <span className="text-white font-bold mt-0.5">{dev.dsaSolved || 0} Problems</span>
                   </div>
                   <div className="flex flex-col p-2 bg-slate-950/40 rounded border border-slate-900/50">
-                    <span className="text-slate-500">Aptitude Count</span>
-                    <span className="text-white font-bold mt-0.5">{dev.aptitudeQuestions} Solved</span>
+                    <span className="text-slate-500 uppercase">Projects</span>
+                    <span className="text-white font-bold mt-0.5">{(dev.projectProgress || []).length} Completed</span>
                   </div>
                   <div className="flex flex-col p-2 bg-slate-950/40 rounded border border-slate-900/50">
-                    <span className="text-slate-500">Project Hours</span>
-                    <span className="text-white font-bold mt-0.5">{dev.projectHours} Hrs</span>
+                    <span className="text-slate-500 uppercase">Comm Level</span>
+                    <span className="text-white font-bold mt-0.5">LVL {Math.min(5, Math.floor((dev.communicationMinutes || 0) / 100) + 1)}</span>
+                  </div>
+                  <div className="flex flex-col p-2 bg-slate-950/40 rounded border border-slate-900/50">
+                    <span className="text-slate-500 uppercase">Mock Interviews</span>
+                    <span className="text-white font-bold mt-0.5">{(dev.mockInterviewHistory || []).length} Mocks</span>
                   </div>
                 </div>
 
