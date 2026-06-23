@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
-import { Award, Sparkles, Code, Terminal, Timer, Lock, Trophy, CheckSquare, Square, BookOpen, Swords, Globe } from 'lucide-react'
+import { 
+  Award, Sparkles, Code, Terminal, Trophy, BookOpen, Swords, Globe, 
+  Palette, Code2, Braces, Server, Database, Coffee, GitFork, MessageSquare, Users
+} from 'lucide-react'
 import { useGameStore, getCurrentDayCount } from '../store/gameStore'
+import type { SkillNodeData } from '../store/gameStore'
 import { useSound } from '../hooks/useSound'
 import { SystemWindow } from '../components/SystemWindow'
 import { SkillNode } from '../components/SkillNode'
@@ -11,30 +15,49 @@ export const SkillsPage: React.FC = () => {
   const skills = useGameStore((state) => state.skills)
   const player = useGameStore((state) => state.player)
   const unlockSkill = useGameStore((state) => state.unlockSkill)
-  const updateDevQuestProgress = useGameStore((state) => state.updateDevQuestProgress)
-  const toggleJavaTopic = useGameStore((state) => state.toggleJavaTopic)
-  const claimDevQuestRewards = useGameStore((state) => state.claimDevQuestRewards)
+  const upgradeSkillLevel = useGameStore((state) => state.upgradeSkillLevel)
   
-  const { playUnlock, playClick, playLevelUp } = useSound()
+  const { playUnlock, playClick } = useSound()
 
   const [activeTab, setActiveTab] = useState<'combat' | 'developer'>('combat')
 
-  // Modal inspection states for Combat Skills
+  // Modal inspection states
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const activeSkill = skills.find((s) => s.id === selectedSkillId)
 
+  const getSkillCost = (skill: SkillNodeData) => {
+    if (!skill.unlocked) return skill.cost
+    return skill.cost * (skill.level + 1)
+  }
+
   const handleUnlockSkill = (skillId: string) => {
     setErrorMessage(null)
-    const success = unlockSkill(skillId)
-    
-    if (success) {
-      playUnlock()
-      setSelectedSkillId(null)
+    const skill = skills.find(s => s.id === skillId)
+    if (!skill) return
+
+    const isDeveloperSkill = ['Frontend', 'Backend', 'Programming', 'Soft Skills'].includes(skill.category)
+
+    if (isDeveloperSkill) {
+      const cost = getSkillCost(skill)
+      if (player.gold < cost) {
+        setErrorMessage(`Insufficient gold. Need ${cost} Gold (Current: ${player.gold} G).`)
+        return
+      }
+      const success = upgradeSkillLevel(skillId)
+      if (success) {
+        playUnlock()
+        setSelectedSkillId(null)
+      } else {
+        setErrorMessage(`Upgrade condition failed.`)
+      }
     } else {
-      const skill = skills.find(s => s.id === skillId)
-      if (skill) {
+      const success = unlockSkill(skillId)
+      if (success) {
+        playUnlock()
+        setSelectedSkillId(null)
+      } else {
         if (player.level < skill.requiredLevel) {
           setErrorMessage(`Required Hunter Level ${skill.requiredLevel} not met.`)
         } else if (player.gold < skill.cost) {
@@ -72,62 +95,41 @@ export const SkillsPage: React.FC = () => {
     dailyCodingProblems: 0,
     dailyCommMin: 0,
     dailyProjMin: 0,
-    lastClaimedDate: ''
+    lastClaimedDate: '',
+    javaProgressPercent: 0,
+    reactProgressPercent: 0,
+    backendProgressPercent: 0,
+    projectsCompletedCount: 0,
+    speakingStreak: 0,
+    confidenceXp: 0,
+    mockInterviews: []
   }
 
   const currentDay = getCurrentDayCount()
-  const todayStr = new Date().toDateString()
   const devXpPercent = Math.min((dev.devXp / dev.devXpNeeded) * 100, 100)
 
-  // Developer roadmap grouped by rank
-  const roadmap = {
-    E: [
-      { id: 'variables', category: 'javaProgress', label: 'Java: Variables & Loops' },
-      { id: 'oop', category: 'javaProgress', label: 'Java: OOPs Principles' },
-      { id: 'arrays', category: 'dsaProgress', label: 'DSA: Arrays & Strings' },
-      { id: 'sorting', category: 'dsaProgress', label: 'DSA: Sorting & Searching' },
-      { id: 'self_intro', category: 'mockInterviewHistory', label: 'Comm: Self Introduction' }
-    ],
-    B: [
-      { id: 'react_ts', category: 'frontendProgress', label: 'FS: React & TypeScript' },
-      { id: 'node_express', category: 'backendProgress', label: 'FS: Node.js & Express' },
-      { id: 'db_sql_nosql', category: 'backendProgress', label: 'FS: MongoDB & MySQL' },
-      { id: 'dsa_recursion', category: 'dsaProgress', label: 'DSA: Recursion & LL' },
-      { id: 'dsa_stacks', category: 'dsaProgress', label: 'DSA: Stack & Queue' },
-      { id: 'proj_build', category: 'projectProgress', label: 'Project: Core Building' },
-      { id: 'gd_practice', category: 'mockInterviewHistory', label: 'Comm: GD & Explanation' }
-    ],
-    S: [
-      { id: 'devops_cicd', category: 'devopsProgress', label: 'FS: DevOps & CI/CD' },
-      { id: 'aws_cloud', category: 'devopsProgress', label: 'FS: AWS Services' },
-      { id: 'dsa_trees', category: 'dsaProgress', label: 'DSA: Trees & Graphs' },
-      { id: 'dsa_dp', category: 'dsaProgress', label: 'DSA: Greedy & DP' },
-      { id: 'proj_deploy', category: 'projectProgress', label: 'Project: Deployment' },
-      { id: 'mock_evals', category: 'mockInterviewHistory', label: 'Comm: Mock Interview' }
-    ]
+  // Dev skill icons map
+  const getDevSkillIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'Globe': return <Globe className="w-5 h-5 text-cyan-400" />
+      case 'Palette': return <Palette className="w-5 h-5 text-pink-400" />
+      case 'Code2': return <Code2 className="w-5 h-5 text-blue-400" />
+      case 'Braces': return <Braces className="w-5 h-5 text-indigo-400" />
+      case 'Server': return <Server className="w-5 h-5 text-emerald-400" />
+      case 'Database': return <Database className="w-5 h-5 text-teal-400" />
+      case 'Coffee': return <Coffee className="w-5 h-5 text-orange-400" />
+      case 'GitFork': return <GitFork className="w-5 h-5 text-purple-400" />
+      case 'MessageSquare': return <MessageSquare className="w-5 h-5 text-sky-400" />
+      case 'Users': return <Users className="w-5 h-5 text-violet-400" />
+      default: return <Code className="w-5 h-5 text-slate-400" />
+    }
   }
 
-  // Check if daily quest is completed
-  const isDailyQuestComplete = 
-    (dev.dailyJavaDsaMin || 0) >= 90 &&
-    (dev.dailyFullStackMin || 0) >= 120 &&
-    (dev.dailyCodingProblems || 0) >= 3 &&
-    (dev.dailyCommMin || 0) >= 20 &&
-    (dev.dailyProjMin || 0) >= 60
-
-  const getDevRank = (day: number) => {
-    if (day <= 30) return "Foundation Hunter (E-Rank)"
-    if (day <= 60) return "Full Stack Hunter (B-Rank)"
-    return "Full Stack Monarch (S-Rank)"
-  }
-
-  const hasClaimedToday = dev.lastClaimedDate === todayStr
-
-  const handleClaimDevRewards = () => {
-    if (hasClaimedToday || !isDailyQuestComplete) return
-    playLevelUp()
-    claimDevQuestRewards()
-  }
+  // Developer Skills divided by category
+  const frontendSkills = skills.filter(s => s.category === 'Frontend')
+  const backendSkills = skills.filter(s => s.category === 'Backend')
+  const programmingSkills = skills.filter(s => s.category === 'Programming')
+  const softSkills = skills.filter(s => s.category === 'Soft Skills')
 
   return (
     <div className="min-h-screen bg-hunter-bg rpg-grid pt-8 pb-20 px-4">
@@ -153,7 +155,7 @@ export const SkillsPage: React.FC = () => {
                 : 'border-slate-800 bg-slate-950/60 text-slate-500 hover:border-slate-700 hover:text-slate-300'
             }`}
           >
-            💻 Developer Quest
+            💻 Developer Skill Tree
           </button>
         </div>
 
@@ -166,7 +168,7 @@ export const SkillsPage: React.FC = () => {
               variant="blue"
             >
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex-1">
+                <div className="flex-grow">
                   <h3 className="font-display text-sm md:text-base font-black text-hunter-blue uppercase tracking-widest flex items-center gap-1.5">
                     <Award className="w-5 h-5" />
                     Hunter Skill Tree Matrix
@@ -186,7 +188,6 @@ export const SkillsPage: React.FC = () => {
             {/* Skill Tree Node Map */}
             <div className="p-8 md:p-12 rounded-xl bg-hunter-gray/40 border border-slate-800 relative overflow-hidden flex flex-col items-center justify-center min-h-[400px]">
               
-              {/* Background grid canvas vectors */}
               <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                   <defs>
@@ -198,7 +199,6 @@ export const SkillsPage: React.FC = () => {
                 </svg>
               </div>
 
-              {/* SVG Connecting Paths */}
               <div className="absolute inset-0 z-0 pointer-events-none">
                 <svg width="100%" height="100%" className="absolute inset-0">
                   <line 
@@ -228,9 +228,7 @@ export const SkillsPage: React.FC = () => {
                 </svg>
               </div>
 
-              {/* Node Grid Layout */}
               <div className="relative z-10 w-full flex flex-col items-center justify-between min-h-[350px]">
-                
                 {/* Row 1: Start node (Speed Boost) */}
                 <div className="mt-2">
                   {skills.find(s => s.id === 'speed_boost') && (
@@ -282,28 +280,27 @@ export const SkillsPage: React.FC = () => {
                     />
                   )}
                 </div>
-
               </div>
             </div>
           </>
         ) : (
           <>
-            {/* Developer Hunter System Header */}
+            {/* S-Rank Developer Skill Tree Header */}
             <SystemWindow 
-              title="DEVELOPER PLACEMENT MATRIX" 
-              subtitle="Software engineering roadmap and daily skill quest parameters"
+              title="S-RANK DEVELOPER SKILL TREE" 
+              subtitle="Upgrade core development, programming, and soft skill proficiencies"
               variant="blue"
             >
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex-grow">
-                  <div className="flex items-center gap-2 text-cyan-400">
+                  <div className="flex items-center gap-2 text-cyan-400 font-display">
                     <Terminal className="w-5 h-5" />
-                    <h3 className="font-display text-sm md:text-base font-black uppercase tracking-widest">
-                      Developer Level {dev.devLevel}
+                    <h3 className="text-sm md:text-base font-black uppercase tracking-widest">
+                      Developer Lvl {dev.devLevel}
                     </h3>
                   </div>
                   <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                    Improve coding stats dynamically through deliberate practice. Accumulate Developer XP daily to level up and gain stat multipliers for Intelligence, Problem Solving, and Discipline.
+                    Log daily developer quests to gain XP, then unlock and upgrade core software engineering skill nodes. Spending gold coins levels up your skills up to Level 5.
                   </p>
                   
                   {/* XP Bar */}
@@ -319,431 +316,188 @@ export const SkillsPage: React.FC = () => {
                 </div>
 
                 <div className="p-4 rounded-lg bg-slate-950 border border-slate-900 text-center font-display shrink-0 flex flex-col items-center">
-                  <span className="text-[9px] text-slate-500 uppercase tracking-wider block">streak bonus</span>
-                  <span className="text-xl font-black text-amber-400">🔥 {dev.codingStreak} DAYS</span>
-                  <span className="text-[8px] text-slate-600 uppercase tracking-widest mt-1 block">active day: {currentDay}/90</span>
+                  <span className="text-[9px] text-slate-500 uppercase tracking-wider block">Available Gold</span>
+                  <span className="text-xl font-black text-hunter-gold">{player.gold} G</span>
+                  <span className="text-[8px] text-slate-600 uppercase tracking-widest mt-1 block">Active Day: Day {currentDay} of 90</span>
                 </div>
               </div>
             </SystemWindow>
 
-            {/* Developer Stats Dashboard Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-display text-[10px] mb-2">
-              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
-                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Developer Level</span>
-                <span className="text-xs font-black text-cyan-400 mt-0.5">LVL {dev.devLevel}</span>
-              </div>
-              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
-                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Current Rank</span>
-                <span className="text-[9px] font-black text-indigo-400 mt-0.5 uppercase truncate">{getDevRank(currentDay)}</span>
-              </div>
-              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
-                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">DSA Count</span>
-                <span className="text-xs font-black text-emerald-400 mt-0.5">{dev.dsaSolved || 0} SOLVED</span>
-              </div>
-              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
-                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Project Count</span>
-                <span className="text-xs font-black text-amber-400 mt-0.5">{(dev.projectProgress || []).length} COMPLETED</span>
-              </div>
-              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
-                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Comm Level</span>
-                <span className="text-xs font-black text-blue-400 mt-0.5">LVL {Math.min(5, Math.floor((dev.communicationMinutes || 0) / 100) + 1)}</span>
-              </div>
-              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px]">
-                <span className="text-slate-500 uppercase tracking-wider block text-[7.5px]">Coding Streak</span>
-                <span className="text-xs font-black text-orange-400 mt-0.5">🔥 {dev.codingStreak} DAYS</span>
-              </div>
-              <div className="p-3 rounded bg-slate-950/60 border border-slate-900/60 flex flex-col justify-between min-h-[55px] col-span-2">
-                <span className="text-slate-500 tracking-wider block text-[7.5px] uppercase">Mock Interviews</span>
-                <span className="text-xs font-black text-purple-400 mt-0.5">{(dev.mockInterviewHistory || []).length} COMPLETED</span>
-              </div>
-            </div>
-
-            {/* Daily Quest Log HUD */}
-            <div className="glass-panel p-6 rounded-lg border border-cyan-400/20 bg-hunter-bg/80 relative overflow-hidden flex flex-col gap-6">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                <div className="flex items-center gap-2">
-                  <Code className="w-4 h-4 text-cyan-400" />
-                  <h4 className="font-display text-xs font-black uppercase tracking-widest text-cyan-400">Daily skill quests</h4>
-                </div>
-                <span className="font-display text-[9px] text-slate-500">QUESTS RESET AT MIDNIGHT</span>
-              </div>
-
-              {/* Tasks List */}
-              <div className="flex flex-col gap-4 font-display text-xs">
-                {/* 1. Java + DSA Quest */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">💻 Java + DSA Quest</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyJavaDsaMin || 0} / 90 Mins</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyJavaDsaMin || 0) / 90) * 100, 100)}%` }} />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyJavaDsaMin', 15); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+15m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyJavaDsaMin', 30); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+30m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyJavaDsaMin', 90 - (dev.dailyJavaDsaMin || 0)); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
-                  </div>
-                </div>
-
-                {/* 2. Full Stack Quest */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">🚀 Full Stack Quest</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyFullStackMin || 0} / 120 Mins</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyFullStackMin || 0) / 120) * 100, 100)}%` }} />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyFullStackMin', 30); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+30m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyFullStackMin', 60); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+60m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyFullStackMin', 120 - (dev.dailyFullStackMin || 0)); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
-                  </div>
-                </div>
-
-                {/* 3. Coding Battle */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">⚔️ Coding Battle</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyCodingProblems || 0} / 3 Problems</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyCodingProblems || 0) / 3) * 100, 100)}%` }} />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyCodingProblems', 1); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+1 Problem</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyCodingProblems', 3 - (dev.dailyCodingProblems || 0)); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
-                  </div>
-                </div>
-
-                {/* 4. Communication Quest */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">🎤 Communication Quest</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyCommMin || 0} / 20 Mins</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyCommMin || 0) / 20) * 100, 100)}%` }} />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyCommMin', 5); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+5m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyCommMin', 20 - (dev.dailyCommMin || 0)); }} className="px-3 py-1.5 bg-cyan-950/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
-                  </div>
-                </div>
-
-                {/* 5. Project Quest */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded bg-slate-950/40 border border-slate-900">
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-white uppercase tracking-wider">🚀 Project Quest</span>
-                      <span className="text-cyan-400 font-bold">{dev.dailyProjMin || 0} / 60 Mins</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-400 transition-all" style={{ width: `${Math.min(((dev.dailyProjMin || 0) / 60) * 100, 100)}%` }} />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyProjMin', 10); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+10m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyProjMin', 30); }} className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-black rounded hover:bg-slate-850 hover:border-slate-700 cursor-pointer">+30m</button>
-                    <button onClick={() => { playClick(); updateDevQuestProgress('dailyProjMin', 60 - (dev.dailyProjMin || 0)); }} className="px-3 py-1.5 bg-cyan-955/30 border border-cyan-500/30 text-[10px] text-cyan-400 font-black rounded hover:bg-cyan-500/10 hover:border-cyan-400 cursor-pointer">MAX</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Reward Block */}
-              <div className="border-t border-slate-800/80 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-display">
-                <div>
-                  <h5 className="text-[10px] text-slate-500 uppercase tracking-widest font-black">DAILY COMPLETION REWARD</h5>
-                  <div className="flex gap-3 text-[11px] font-bold text-slate-300 mt-1 uppercase">
-                    <span className="text-cyan-400">✨ +200 DEV XP</span>
-                    <span className="text-indigo-400">🧠 stats +5 each</span>
-                  </div>
-                </div>
-
-                {hasClaimedToday ? (
-                  <button disabled className="px-6 py-2.5 rounded border border-emerald-500/30 bg-emerald-500/5 text-emerald-500 text-xs font-black tracking-widest uppercase cursor-not-allowed">
-                    REWARDS CLAIMED TODAY
-                  </button>
-                ) : isDailyQuestComplete ? (
-                  <button onClick={handleClaimDevRewards} className="px-6 py-2.5 rounded bg-cyan-500 text-hunter-bg text-xs font-black tracking-widest uppercase hover:brightness-110 shadow-[0_0_15px_rgba(6,182,212,0.45)] cursor-pointer transition-all">
-                    ARISE / CLAIM REWARDS
-                  </button>
-                ) : (
-                  <button disabled className="px-6 py-2.5 rounded border border-slate-800 bg-slate-950/80 text-slate-600 text-[10px] font-black tracking-wider uppercase cursor-not-allowed">
-                    LOG ALL TRACKERS TO CLEAR QUEST
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* 90-Day Placement Prep Timeline */}
-            <div className="flex flex-col gap-6">
-              <h4 className="font-display text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                <Timer className="w-4 h-4 text-cyan-400" />
-                90-Day Placement preparation timeline Matrix
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                {/* E Rank Card */}
-                <div className={`p-5 rounded-lg border bg-slate-950/50 flex flex-col justify-between gap-4 transition-all relative overflow-hidden ${
-                  currentDay <= 30 ? 'border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'border-slate-900 opacity-75'
-                }`}>
-                  {currentDay > 30 && <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500/25 border border-emerald-500 text-[8px] font-display font-bold text-emerald-400 uppercase">COMPLETED</div>}
-                  <div>
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-900 mb-3">
-                      <span className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">E RANK: FOUNDATION HUNTER</span>
-                      <span className="text-[9px] text-slate-500 font-display">DAY 1-30</span>
-                    </div>
-
-                    <div className="flex flex-col gap-4 font-sans text-xs">
-                      <div>
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">FOUNDATION ROADMAP</span>
-                        <div className="flex flex-col gap-1.5 mt-2">
-                          {roadmap.E.map(item => {
-                            const progressList = dev[item.category as keyof typeof dev] as string[]
-                            const isDone = Array.isArray(progressList) && progressList.includes(item.id)
-                            return (
-                              <button key={item.id} onClick={() => { playClick(); toggleJavaTopic(item.id, item.category as any); }} className="flex items-center gap-2 text-left cursor-pointer hover:text-cyan-300 transition-colors w-full group">
-                                {isDone ? <CheckSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> : <Square className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 shrink-0" />}
-                                <span className={`text-[11px] ${isDone ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{item.label}</span>
-                              </button>
-                            )
-                          })}
+            {/* RPG Skill Grids divided by Category */}
+            <div className="flex flex-col gap-8 font-display">
+              
+              {/* Category: Frontend */}
+              <div className="flex flex-col gap-3">
+                <h4 className="text-xs font-black text-white uppercase tracking-wider border-b border-slate-900 pb-1.5 flex items-center gap-1.5">
+                  <Globe className="w-4.5 h-4.5 text-cyan-400" />
+                  Frontend Skill nodes
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  {frontendSkills.map(skill => {
+                    const cost = getSkillCost(skill)
+                    return (
+                      <div 
+                        key={skill.id}
+                        onClick={() => { playClick(); setSelectedSkillId(skill.id); }}
+                        className={`p-4 rounded border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                          skill.unlocked 
+                            ? 'border-cyan-500/30 bg-cyan-950/5 hover:border-cyan-400' 
+                            : 'border-slate-900 bg-slate-950/40 hover:border-slate-800'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="p-2 rounded bg-slate-900 border border-slate-800">
+                            {getDevSkillIcon(skill.icon)}
+                          </div>
+                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                            skill.unlocked ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'bg-slate-900 text-slate-600'
+                          }`}>
+                            {skill.unlocked ? `Lvl ${skill.level}/5` : 'Locked'}
+                          </span>
+                        </div>
+                        <div>
+                          <h5 className="font-black text-white text-xs uppercase">{skill.name}</h5>
+                          <p className="text-[9px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">{skill.description}</p>
+                        </div>
+                        <div className="border-t border-slate-900/60 pt-2 flex justify-between items-center text-[9px]">
+                          <span className="text-slate-500">Cost:</span>
+                          <span className="text-hunter-gold font-bold">{cost} G</span>
                         </div>
                       </div>
-
-                      <div className="border-t border-slate-900/60 pt-3">
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">POSTURE MOBILITY ROUTINE</span>
-                        <p className="text-[11px] text-slate-450 mt-1 leading-normal">
-                          • Hanging: 3 x 30s<br />
-                          • Cobra Stretch: 3 x 30s<br />
-                          • Cat-Cow: 2 Minutes<br />
-                          • Wall Posture Hold: 3 Minutes
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-slate-900 pt-3 font-display">
-                    <span className="text-[9px] text-slate-500 uppercase tracking-wider block">QUEST TARGET PROGRESS</span>
-                    <div className="flex justify-between items-center text-[10px] text-slate-300 mt-1">
-                      <span>DSA Problems (50):</span>
-                      <span className={dev.dsaSolved >= 50 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.dsaSolved || 0} / 50</span>
-                    </div>
-                  </div>
+                    )
+                  })}
                 </div>
+              </div>
 
-                {/* B Rank Card */}
-                <div className={`p-5 rounded-lg border bg-slate-950/50 flex flex-col justify-between gap-4 transition-all relative overflow-hidden ${
-                  currentDay > 30 && currentDay <= 60 ? 'border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'border-slate-900 opacity-75'
-                }`}>
-                  {currentDay > 60 && <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500/25 border border-emerald-500 text-[8px] font-display font-bold text-emerald-400 uppercase">COMPLETED</div>}
-                  {currentDay <= 30 && <div className="absolute top-2 right-2 text-[8px] font-display font-black text-slate-700 flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> LOCKED</div>}
-                  <div>
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-900 mb-3">
-                      <span className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">B RANK: FULL STACK HUNTER</span>
-                      <span className="text-[9px] text-slate-500 font-display">DAY 31-60</span>
-                    </div>
-
-                    <div className="flex flex-col gap-4 font-sans text-xs">
-                      <div>
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">FULL STACK ROADMAP</span>
-                        <div className="flex flex-col gap-1.5 mt-2">
-                          {roadmap.B.map(item => {
-                            const progressList = dev[item.category as keyof typeof dev] as string[]
-                            const isDone = Array.isArray(progressList) && progressList.includes(item.id)
-                            return (
-                              <button key={item.id} onClick={() => { playClick(); toggleJavaTopic(item.id, item.category as any); }} className="flex items-center gap-2 text-left cursor-pointer hover:text-cyan-300 transition-colors w-full group">
-                                {isDone ? <CheckSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> : <Square className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 shrink-0" />}
-                                <span className={`text-[11px] ${isDone ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{item.label}</span>
-                              </button>
-                            )
-                          })}
+              {/* Category: Backend */}
+              <div className="flex flex-col gap-3">
+                <h4 className="text-xs font-black text-white uppercase tracking-wider border-b border-slate-900 pb-1.5 flex items-center gap-1.5">
+                  <Database className="w-4.5 h-4.5 text-emerald-400" />
+                  Backend Skill nodes
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {backendSkills.map(skill => {
+                    const cost = getSkillCost(skill)
+                    return (
+                      <div 
+                        key={skill.id}
+                        onClick={() => { playClick(); setSelectedSkillId(skill.id); }}
+                        className={`p-4 rounded border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                          skill.unlocked 
+                            ? 'border-emerald-500/30 bg-emerald-950/5 hover:border-emerald-400' 
+                            : 'border-slate-900 bg-slate-950/40 hover:border-slate-800'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="p-2 rounded bg-slate-900 border border-slate-800">
+                            {getDevSkillIcon(skill.icon)}
+                          </div>
+                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                            skill.unlocked ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-900 text-slate-600'
+                          }`}>
+                            {skill.unlocked ? `Lvl ${skill.level}/5` : 'Locked'}
+                          </span>
+                        </div>
+                        <div>
+                          <h5 className="font-black text-white text-xs uppercase">{skill.name}</h5>
+                          <p className="text-[9px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">{skill.description}</p>
+                        </div>
+                        <div className="border-t border-slate-900/60 pt-2 flex justify-between items-center text-[9px]">
+                          <span className="text-slate-500">Cost:</span>
+                          <span className="text-hunter-gold font-bold">{cost} G</span>
                         </div>
                       </div>
-
-                      <div className="border-t border-slate-900/60 pt-3">
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">POSTURE MOBILITY ROUTINE</span>
-                        <p className="text-[11px] text-slate-450 mt-1 leading-normal">
-                          • Hanging: 4 x 30s<br />
-                          • Cobra Stretch: 4 x 30s<br />
-                          • Cat-Cow: 3 Minutes<br />
-                          • Wall Posture Hold: 5 Minutes
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-slate-900 pt-3 font-display">
-                    <span className="text-[9px] text-slate-500 uppercase tracking-wider block">QUEST TARGET PROGRESS</span>
-                    <div className="flex justify-between items-center text-[10px] text-slate-300 mt-1">
-                      <span>DSA Problems (100):</span>
-                      <span className={dev.dsaSolved >= 100 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.dsaSolved || 0} / 100</span>
-                    </div>
-                  </div>
+                    )
+                  })}
                 </div>
+              </div>
 
-                {/* S Rank Card */}
-                <div className={`p-5 rounded-lg border bg-slate-950/50 flex flex-col justify-between gap-4 transition-all relative overflow-hidden ${
-                  currentDay > 60 ? 'border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'border-slate-900 opacity-75'
-                }`}>
-                  {currentDay <= 60 && <div className="absolute top-2 right-2 text-[8px] font-display font-black text-slate-700 flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> LOCKED</div>}
-                  <div>
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-900 mb-3">
-                      <span className="font-display text-[10px] font-black tracking-widest text-cyan-400 uppercase">S RANK: FULL STACK MONARCH</span>
-                      <span className="text-[9px] text-slate-500 font-display">DAY 61-90</span>
-                    </div>
-
-                    <div className="flex flex-col gap-4 font-sans text-xs">
-                      <div>
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">MONARCH ROADMAP</span>
-                        <div className="flex flex-col gap-1.5 mt-2">
-                          {roadmap.S.map(item => {
-                            const progressList = dev[item.category as keyof typeof dev] as string[]
-                            const isDone = Array.isArray(progressList) && progressList.includes(item.id)
-                            return (
-                              <button key={item.id} onClick={() => { playClick(); toggleJavaTopic(item.id, item.category as any); }} className="flex items-center gap-2 text-left cursor-pointer hover:text-cyan-300 transition-colors w-full group">
-                                {isDone ? <CheckSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> : <Square className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 shrink-0" />}
-                                <span className={`text-[11px] ${isDone ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{item.label}</span>
-                              </button>
-                            )
-                          })}
+              {/* Category: Programming */}
+              <div className="flex flex-col gap-3">
+                <h4 className="text-xs font-black text-white uppercase tracking-wider border-b border-slate-900 pb-1.5 flex items-center gap-1.5">
+                  <Coffee className="w-4.5 h-4.5 text-orange-400" />
+                  Programming Skill nodes
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {programmingSkills.map(skill => {
+                    const cost = getSkillCost(skill)
+                    return (
+                      <div 
+                        key={skill.id}
+                        onClick={() => { playClick(); setSelectedSkillId(skill.id); }}
+                        className={`p-4 rounded border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                          skill.unlocked 
+                            ? 'border-orange-500/30 bg-orange-950/5 hover:border-orange-400' 
+                            : 'border-slate-900 bg-slate-950/40 hover:border-slate-800'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="p-2 rounded bg-slate-900 border border-slate-800">
+                            {getDevSkillIcon(skill.icon)}
+                          </div>
+                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                            skill.unlocked ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-slate-900 text-slate-600'
+                          }`}>
+                            {skill.unlocked ? `Lvl ${skill.level}/5` : 'Locked'}
+                          </span>
+                        </div>
+                        <div>
+                          <h5 className="font-black text-white text-xs uppercase">{skill.name}</h5>
+                          <p className="text-[9px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">{skill.description}</p>
+                        </div>
+                        <div className="border-t border-slate-900/60 pt-2 flex justify-between items-center text-[9px]">
+                          <span className="text-slate-500">Cost:</span>
+                          <span className="text-hunter-gold font-bold">{cost} G</span>
                         </div>
                       </div>
-
-                      <div className="border-t border-slate-900/60 pt-3">
-                        <span className="font-display text-[9px] text-slate-500 uppercase tracking-widest font-black block">POSTURE MOBILITY ROUTINE</span>
-                        <p className="text-[11px] text-slate-455 mt-1 leading-normal">
-                          • Hanging: 5 x 30s<br />
-                          • Cobra Stretch: 5 x 30s<br />
-                          • Cat-Cow: 5 Minutes<br />
-                          • Wall Posture Hold: 5 Minutes
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-slate-900 pt-3 font-display">
-                    <span className="text-[9px] text-slate-500 uppercase tracking-wider block">QUEST TARGET PROGRESS</span>
-                    <div className="flex justify-between items-center text-[10px] text-slate-300 mt-1">
-                      <span>DSA Problems (150):</span>
-                      <span className={dev.dsaSolved >= 150 ? 'text-cyan-400 font-bold' : 'text-slate-400'}>{dev.dsaSolved || 0} / 150</span>
-                    </div>
-                  </div>
+                    )
+                  })}
                 </div>
-
               </div>
-            </div>
 
-            {/* System Study Resources & Database */}
-            <div className="flex flex-col gap-6 mt-6">
-              <h4 className="font-display text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-cyan-400" />
-                SYSTEM STUDY RESOURCES & DATABASE
-              </h4>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 font-display">
-                <a 
-                  href="https://docs.oracle.com/en/java/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">Java Syllabus</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ ORACLE DOCS ]</span>
-                </a>
-                <a 
-                  href="https://takeuforward.org/strivers-a2z-dsa-course-sheet-instructions/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">DSA Prep Sheet</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ STRIVER A2Z ]</span>
-                </a>
-                <a 
-                  href="https://react.dev" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">React Docs</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ REACT.DEV ]</span>
-                </a>
-                <a 
-                  href="https://www.typescriptlang.org/docs/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">TS Handbook</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ TS LANG ]</span>
-                </a>
-                <a 
-                  href="https://nodejs.org/en/docs/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">Node.js Docs</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ NODEJS.ORG ]</span>
-                </a>
-                <a 
-                  href="https://expressjs.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">Express.js</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ EXPRESSJS ]</span>
-                </a>
-                <a 
-                  href="https://www.mongodb.com/docs/manual/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">MongoDB Manual</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ MONGODB ]</span>
-                </a>
-                <a 
-                  href="https://dev.mysql.com/doc/refman/8.0/en/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">MySQL Ref</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ MYSQL.COM ]</span>
-                </a>
-                <a 
-                  href="https://roadmap.sh/devops" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">DevOps Map</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ ROADMAP.SH ]</span>
-                </a>
-                <a 
-                  href="https://docs.aws.amazon.com/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-3 rounded bg-slate-950/60 border border-slate-900 hover:border-cyan-500/40 hover:bg-cyan-955/10 text-center transition-all cursor-pointer group flex flex-col justify-center items-center gap-1.5"
-                >
-                  <span className="text-[10px] font-black text-slate-200 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">AWS Docs</span>
-                  <span className="text-[8px] text-slate-500 uppercase tracking-widest">[ AWS AMAZON ]</span>
-                </a>
+              {/* Category: Soft Skills */}
+              <div className="flex flex-col gap-3">
+                <h4 className="text-xs font-black text-white uppercase tracking-wider border-b border-slate-900 pb-1.5 flex items-center gap-1.5">
+                  <MessageSquare className="w-4.5 h-4.5 text-sky-400" />
+                  Soft Skill nodes
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {softSkills.map(skill => {
+                    const cost = getSkillCost(skill)
+                    return (
+                      <div 
+                        key={skill.id}
+                        onClick={() => { playClick(); setSelectedSkillId(skill.id); }}
+                        className={`p-4 rounded border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                          skill.unlocked 
+                            ? 'border-sky-500/30 bg-sky-950/5 hover:border-sky-400' 
+                            : 'border-slate-900 bg-slate-950/40 hover:border-slate-800'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="p-2 rounded bg-slate-900 border border-slate-800">
+                            {getDevSkillIcon(skill.icon)}
+                          </div>
+                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                            skill.unlocked ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' : 'bg-slate-900 text-slate-600'
+                          }`}>
+                            {skill.unlocked ? `Lvl ${skill.level}/5` : 'Locked'}
+                          </span>
+                        </div>
+                        <div>
+                          <h5 className="font-black text-white text-xs uppercase">{skill.name}</h5>
+                          <p className="text-[9px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">{skill.description}</p>
+                        </div>
+                        <div className="border-t border-slate-900/60 pt-2 flex justify-between items-center text-[9px]">
+                          <span className="text-slate-500">Cost:</span>
+                          <span className="text-hunter-gold font-bold">{cost} G</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
+
             </div>
 
             {/* Achievements Badges Panel */}
@@ -775,7 +529,7 @@ export const SkillsPage: React.FC = () => {
 
                 {/* 2. Algorithm Knight */}
                 {(() => {
-                  const unlocked = dev.achievements.includes('algorithm_knight') || dev.dsaSolved >= 100
+                  const unlocked = dev.achievements.includes('algorithm_knight') || dev.dsaSolved >= 150
                   return (
                     <div className={`p-4 rounded border text-center flex flex-col justify-between gap-3 transition-all ${
                       unlocked ? 'border-cyan-400 bg-cyan-950/20 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.15)]' : 'border-slate-900 bg-slate-950/40 text-slate-600'
@@ -783,7 +537,7 @@ export const SkillsPage: React.FC = () => {
                       <Trophy className={`w-8 h-8 mx-auto ${unlocked ? 'text-cyan-400 animate-float' : 'text-slate-700'}`} />
                       <div>
                         <span className="font-black block uppercase">ALGORITHM KNIGHT</span>
-                        <span className="text-[8px] text-slate-500 block mt-1">Solve 100+ DSA problems</span>
+                        <span className="text-[8px] text-slate-500 block mt-1">Solve 150+ DSA problems</span>
                       </div>
                       <span className="font-black text-[9px] block tracking-wider uppercase mt-1">
                         {unlocked ? '[ UNLOCKED ]' : '[ LOCKED ]'}
@@ -794,7 +548,7 @@ export const SkillsPage: React.FC = () => {
 
                 {/* 3. Java Master */}
                 {(() => {
-                  const unlocked = dev.achievements.includes('java_master') || dev.javaProgress.length === 16
+                  const unlocked = dev.achievements.includes('java_master') || (dev.javaProgressPercent || 0) >= 100
                   return (
                     <div className={`p-4 rounded border text-center flex flex-col justify-between gap-3 transition-all ${
                       unlocked ? 'border-cyan-400 bg-cyan-950/20 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.15)]' : 'border-slate-900 bg-slate-950/40 text-slate-600'
@@ -802,7 +556,7 @@ export const SkillsPage: React.FC = () => {
                       <Trophy className={`w-8 h-8 mx-auto ${unlocked ? 'text-cyan-400 animate-float' : 'text-slate-700'}`} />
                       <div>
                         <span className="font-black block uppercase">JAVA MASTER</span>
-                        <span className="text-[8px] text-slate-500 block mt-1">Check all 16 Java topics</span>
+                        <span className="text-[8px] text-slate-500 block mt-1">Java roadmap progress 100%</span>
                       </div>
                       <span className="font-black text-[9px] block tracking-wider uppercase mt-1">
                         {unlocked ? '[ UNLOCKED ]' : '[ LOCKED ]'}
@@ -813,7 +567,7 @@ export const SkillsPage: React.FC = () => {
 
                 {/* 4. Placement Monarch */}
                 {(() => {
-                  const unlocked = dev.achievements.includes('placement_monarch') || currentDay >= 90
+                  const unlocked = dev.achievements.includes('s_rank_monarch') || currentDay >= 90
                   return (
                     <div className={`p-4 rounded border text-center flex flex-col justify-between gap-3 transition-all ${
                       unlocked ? 'border-cyan-400 bg-cyan-950/20 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.15)]' : 'border-slate-900 bg-slate-950/40 text-slate-600'
@@ -833,7 +587,7 @@ export const SkillsPage: React.FC = () => {
             </div>
 
             {/* Developer Notes / Study Database Panel */}
-            <div className="glass-panel p-6 rounded-lg border border-cyan-400/20 bg-hunter-bg/80 relative overflow-hidden flex flex-col gap-6 mt-4">
+            <div className="glass-panel p-6 rounded-lg border border-cyan-400/20 bg-hunter-bg/80 relative overflow-hidden flex flex-col gap-6">
               <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-cyan-400" />
@@ -848,7 +602,7 @@ export const SkillsPage: React.FC = () => {
                   target="_blank" 
                   rel="noopener noreferrer" 
                   onClick={() => playClick()}
-                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-950/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
+                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-955/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
                 >
                   <div className="p-2 rounded bg-cyan-950/50 border border-cyan-500/20 text-cyan-400 group-hover:shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all">
                     <Code className="w-5 h-5" />
@@ -864,7 +618,7 @@ export const SkillsPage: React.FC = () => {
                   target="_blank" 
                   rel="noopener noreferrer" 
                   onClick={() => playClick()}
-                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-950/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
+                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-955/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
                 >
                   <div className="p-2 rounded bg-cyan-950/50 border border-cyan-500/20 text-cyan-400 group-hover:shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all">
                     <Swords className="w-5 h-5" />
@@ -880,7 +634,7 @@ export const SkillsPage: React.FC = () => {
                   target="_blank" 
                   rel="noopener noreferrer" 
                   onClick={() => playClick()}
-                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-950/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
+                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-955/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
                 >
                   <div className="p-2 rounded bg-cyan-950/50 border border-cyan-500/20 text-cyan-400 group-hover:shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all">
                     <Terminal className="w-5 h-5" />
@@ -896,7 +650,7 @@ export const SkillsPage: React.FC = () => {
                   target="_blank" 
                   rel="noopener noreferrer" 
                   onClick={() => playClick()}
-                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-950/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
+                  className="p-4 rounded border border-slate-900 bg-slate-950/40 hover:border-cyan-400/50 hover:bg-cyan-955/10 text-left flex items-start gap-3 transition-all cursor-pointer group"
                 >
                   <div className="p-2 rounded bg-cyan-950/50 border border-cyan-500/20 text-cyan-400 group-hover:shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all">
                     <Globe className="w-5 h-5" />
@@ -913,75 +667,132 @@ export const SkillsPage: React.FC = () => {
 
       </div>
 
-      {/* Skill details Modal for Combat Tree */}
+      {/* Skill details Modal */}
       <Modal
         isOpen={selectedSkillId !== null}
         onClose={() => setSelectedSkillId(null)}
         title={activeSkill?.name || 'Skill Details'}
-        variant={activeSkill?.category === 'Monarch' ? 'purple' : 'blue'}
+        variant={activeSkill ? (activeSkill.category === 'Monarch' ? 'purple' : 'blue') : 'blue'}
       >
-        {activeSkill && (
-          <div className="flex flex-col gap-6">
-            <div>
-              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[9px] font-display font-bold uppercase tracking-widest text-hunter-blue">
-                {activeSkill.category} Skill
-              </span>
-              <p className="text-xs text-slate-300 mt-3 leading-relaxed">
-                {activeSkill.description}
-              </p>
-            </div>
-
-            {/* Attributes Grid */}
-            <div className="grid grid-cols-2 gap-3 p-4 rounded bg-slate-950 border border-slate-900 font-display text-[10px] text-slate-500 uppercase font-semibold">
+        {activeSkill && (() => {
+          const isDevSkill = ['Frontend', 'Backend', 'Programming', 'Soft Skills'].includes(activeSkill.category)
+          const cost = getSkillCost(activeSkill)
+          const isAffordable = player.gold >= cost
+          
+          return (
+            <div className="flex flex-col gap-6">
               <div>
-                <span>Mana Cost:</span>
-                <span className="text-white ml-1.5">{activeSkill.manaCost > 0 ? `${activeSkill.manaCost} MP` : 'Passive (0)'}</span>
-              </div>
-              <div>
-                <span>Cooldown:</span>
-                <span className="text-white ml-1.5">{activeSkill.cooldown > 0 ? `${activeSkill.cooldown}s` : 'None'}</span>
-              </div>
-              <div>
-                <span>Required Level:</span>
-                <span className={player.level >= activeSkill.requiredLevel ? 'text-hunter-blue ml-1.5' : 'text-red-500 ml-1.5'}>
-                  Lvl {activeSkill.requiredLevel}
+                <span className={`px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[9px] font-display font-bold uppercase tracking-widest ${
+                  isDevSkill ? 'text-cyan-400' : 'text-hunter-blue'
+                }`}>
+                  {activeSkill.category} Skill Node
                 </span>
+                <p className="text-xs text-slate-300 mt-3 leading-relaxed">
+                  {activeSkill.description}
+                </p>
               </div>
-              <div>
-                <span>Unlock Cost:</span>
-                <span className={player.gold >= activeSkill.cost ? 'text-hunter-gold ml-1.5' : 'text-red-500 ml-1.5'}>
-                  {activeSkill.cost} Gold
-                </span>
-              </div>
-            </div>
 
-            {errorMessage && (
-              <div className="p-3 rounded bg-red-950/20 border border-red-500/30 text-[10px] font-display font-semibold uppercase text-red-500 tracking-wide text-center">
-                {errorMessage}
+              {/* Attributes Grid */}
+              <div className="grid grid-cols-2 gap-3 p-4 rounded bg-slate-950 border border-slate-900 font-display text-[10px] text-slate-500 uppercase font-semibold">
+                {isDevSkill ? (
+                  <>
+                    <div>
+                      <span>Current Level:</span>
+                      <span className="text-white ml-1.5">{activeSkill.unlocked ? `Lvl ${activeSkill.level} / ${activeSkill.maxLevel}` : 'Locked'}</span>
+                    </div>
+                    <div>
+                      <span>Status:</span>
+                      <span className={`${activeSkill.unlocked ? 'text-emerald-400' : 'text-red-500'} ml-1.5`}>
+                        {activeSkill.unlocked ? 'ACTIVE' : 'LOCKED'}
+                      </span>
+                    </div>
+                    <div>
+                      <span>Required Hunter Lvl:</span>
+                      <span className={player.level >= activeSkill.requiredLevel ? 'text-cyan-400 ml-1.5' : 'text-red-500 ml-1.5'}>
+                        Lvl {activeSkill.requiredLevel}
+                      </span>
+                    </div>
+                    <div>
+                      <span>Upgrade Gold Cost:</span>
+                      <span className={isAffordable ? 'text-hunter-gold ml-1.5' : 'text-red-500 ml-1.5'}>
+                        {cost} G
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <span>Mana Cost:</span>
+                      <span className="text-white ml-1.5">{activeSkill.manaCost > 0 ? `${activeSkill.manaCost} MP` : 'Passive (0)'}</span>
+                    </div>
+                    <div>
+                      <span>Cooldown:</span>
+                      <span className="text-white ml-1.5">{activeSkill.cooldown > 0 ? `${activeSkill.cooldown}s` : 'None'}</span>
+                    </div>
+                    <div>
+                      <span>Required Level:</span>
+                      <span className={player.level >= activeSkill.requiredLevel ? 'text-hunter-blue ml-1.5' : 'text-red-500 ml-1.5'}>
+                        Lvl {activeSkill.requiredLevel}
+                      </span>
+                    </div>
+                    <div>
+                      <span>Unlock Cost:</span>
+                      <span className={player.gold >= activeSkill.cost ? 'text-hunter-gold ml-1.5' : 'text-red-500 ml-1.5'}>
+                        {activeSkill.cost} Gold
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
-            )}
 
-            <div className="mt-2 flex gap-4">
-              {activeSkill.unlocked ? (
-                <button
-                  disabled
-                  className="w-full py-3 rounded border border-emerald-500 bg-emerald-500/10 text-emerald-400 font-display font-black text-xs tracking-widest uppercase cursor-not-allowed text-center"
-                >
-                  Skill Unlocked Lvl {activeSkill.level}
-                </button>
-              ) : (
-                <Button
-                  variant={activeSkill.category === 'Monarch' ? 'purple' : 'blue'}
-                  onClick={() => handleUnlockSkill(activeSkill.id)}
-                  className="w-full text-xs"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  UNLOCK SKILL
-                </Button>
+              {errorMessage && (
+                <div className="p-3 rounded bg-red-950/20 border border-red-500/30 text-[10px] font-display font-semibold uppercase text-red-500 tracking-wide text-center">
+                  {errorMessage}
+                </div>
               )}
+
+              <div className="mt-2 flex gap-4">
+                {isDevSkill ? (
+                  activeSkill.level >= activeSkill.maxLevel ? (
+                    <button
+                      disabled
+                      className="w-full py-3 rounded border border-emerald-500 bg-emerald-500/10 text-emerald-400 font-display font-black text-xs tracking-widest uppercase cursor-not-allowed text-center"
+                    >
+                      MAX LEVEL REACHED ({activeSkill.level}/{activeSkill.maxLevel})
+                    </button>
+                  ) : (
+                    <Button
+                      variant="blue"
+                      onClick={() => handleUnlockSkill(activeSkill.id)}
+                      className="w-full text-xs"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      {activeSkill.unlocked ? 'UPGRADE SKILL LEVEL' : 'UNLOCK SKILL'}
+                    </Button>
+                  )
+                ) : (
+                  activeSkill.unlocked ? (
+                    <button
+                      disabled
+                      className="w-full py-3 rounded border border-emerald-500 bg-emerald-500/10 text-emerald-400 font-display font-black text-xs tracking-widest uppercase cursor-not-allowed text-center"
+                    >
+                      Skill Unlocked Lvl {activeSkill.level}
+                    </button>
+                  ) : (
+                    <Button
+                      variant={activeSkill.category === 'Monarch' ? 'purple' : 'blue'}
+                      onClick={() => handleUnlockSkill(activeSkill.id)}
+                      className="w-full text-xs"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      UNLOCK SKILL
+                    </Button>
+                  )
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
       </Modal>
 
     </div>

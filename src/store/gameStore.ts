@@ -18,6 +18,16 @@ export interface Stats {
   communication?: number
 }
 
+export interface MockInterview {
+  id: string
+  date: string
+  interviewerName: string
+  companyStyle: string // HR Round, Technical Round, Project Round
+  questionsAsked: string
+  feedback: string
+  confidenceRating: number
+}
+
 export interface PlayerDeveloperQuest {
   devLevel: number
   devXp: number
@@ -42,6 +52,15 @@ export interface PlayerDeveloperQuest {
   dailyCodingProblems: number
   dailyCommMin: number
   dailyProjMin: number
+
+  // V2 tracking variables
+  javaProgressPercent?: number
+  reactProgressPercent?: number
+  backendProgressPercent?: number
+  projectsCompletedCount?: number
+  speakingStreak?: number
+  confidenceXp?: number
+  mockInterviews?: MockInterview[]
 
   // Fallbacks for compatibility
   aptitudeQuestions?: number
@@ -149,78 +168,82 @@ export const getCurrentDayCount = (): number => {
   return Math.max(1, Math.min(90, Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1))
 }
 
-export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Quest => {
+export const getQuestForDayCount = (_dayCount: number, currentTasks?: Task[]): Quest => {
   const today = new Date()
   const dayOfWeek = today.getDay() // 0 = Sunday, 1-6 = Mon-Sat
 
-  if (dayOfWeek === 0) {
-    // Sunday - Rest/Recovery Day
-    const tasksConfig = [
-      { id: 'walking', name: 'Walking (Steps)', target: 5000 },
-      { id: 'stretching', name: 'Stretching (Minutes)', target: 10 },
-      { id: 'meditation', name: 'Meditation (Minutes)', target: 10 }
-    ]
-    const tasks = tasksConfig.map((cfg) => {
-      const existing = currentTasks?.find((t) => t.id === cfg.id)
-      return {
-        id: cfg.id,
-        name: cfg.name,
-        current: existing ? existing.current : 0,
-        target: cfg.target
-      }
-    })
-    return {
-      id: "daily_training",
-      name: "RECOVERY QUEST ACTIVATED",
-      description: "Recovery Day Activated. Muscles are rebuilding. Focus on light movement and stretching. No penalty today.",
-      type: "daily",
-      status: "active",
-      tasks,
-      rewards: { xp: 100, statPoints: 0, gold: 50, box: "Recovery Elixir" }
-    }
-  }
-
-  // Monday - Saturday (Normal Daily Quest based on day count)
+  let name = ""
+  let description = ""
   let tasksConfig: { id: string; name: string; target: number }[] = []
   let rewards = { xp: 200, statPoints: 0, gold: 200, box: "Random Loot Box" }
-  let name = ""
 
-  if (dayCount <= 30) {
-    name = "Daily Quest: E-Rank Beginner Regimen"
+  if (dayOfWeek === 0) {
+    // Sunday - Recovery Day Rest Mode
+    name = "SUNDAY RECOVERY QUEST"
+    description = "Muscles are rebuilding. Focus on light movement, resting, and recovery. No penalty today."
     tasksConfig = [
-      { id: 'pushups', name: 'Push-ups', target: 30 },
-      { id: 'squats', name: 'Squats', target: 50 },
-      { id: 'walking', name: 'Walking (Steps)', target: 8000 },
-      { id: 'plank', name: 'Plank (Minutes)', target: 3 },
-      { id: 'meditation', name: 'Meditation (Minutes)', target: 10 },
-      { id: 'hanging', name: 'Hanging (Seconds)', target: 90 },
-      { id: 'cobra_stretch', name: 'Cobra Stretch (Sets)', target: 3 },
-      { id: 'cat_cow', name: 'Cat-Cow (Minutes)', target: 2 },
-      { id: 'wall_posture', name: 'Wall Posture (Minutes)', target: 3 }
+      { id: 'rest', name: 'Rest & Recovery Mode (Rest, hydrate, and chill)', target: 1 }
     ]
-    rewards = { xp: 200, statPoints: 0, gold: 200, box: "Random Loot Box" }
-  } else if (dayCount <= 60) {
-    name = "Daily Quest: B-Rank Intermediate Regimen"
+    rewards = { xp: 100, statPoints: 0, gold: 50, box: "Recovery Elixir" }
+  } else if (dayOfWeek === 1) {
+    name = "MONDAY QUEST: CHEST + TRICEPS"
+    description = "Engage chest pushing power and triceps stabilization."
     tasksConfig = [
-      { id: 'pushups', name: 'Push-ups', target: 60 },
-      { id: 'squats', name: 'Squats', target: 80 },
-      { id: 'walking', name: 'Walking (Steps)', target: 10000 },
-      { id: 'plank', name: 'Plank (Minutes)', target: 5 },
-      { id: 'meditation', name: 'Meditation (Minutes)', target: 15 },
-      { id: 'stretching', name: 'Stretching (Minutes)', target: 15 }
+      { id: 'pushups', name: 'Push Ups (Reps)', target: 30 },
+      { id: 'incline_pushups', name: 'Incline Push Ups (Reps)', target: 36 },
+      { id: 'wide_pushups', name: 'Wide Push Ups (Reps)', target: 24 },
+      { id: 'triceps_dips', name: 'Chair Triceps Dip (Reps)', target: 30 },
+      { id: 'plank_sets', name: 'Plank (Sets)', target: 3 }
     ]
-    rewards = { xp: 200, statPoints: 0, gold: 300, box: "Elixir of Life" }
-  } else {
-    name = "Daily Quest: S-Rank Monarch Regimen"
+  } else if (dayOfWeek === 2) {
+    name = "TUESDAY QUEST: BACK + BICEPS"
+    description = "Develop pull mechanics, grip strength, and spinal extension."
     tasksConfig = [
-      { id: 'pushups', name: 'Push-ups', target: 100 },
-      { id: 'squats', name: 'Squats', target: 100 },
-      { id: 'running', name: 'Running (KM)', target: 5 },
-      { id: 'plank', name: 'Plank (Minutes)', target: 10 },
-      { id: 'meditation', name: 'Meditation (Minutes)', target: 20 },
-      { id: 'stretching', name: 'Stretching (Minutes)', target: 20 }
+      { id: 'backpack_row', name: 'Backpack Row (Reps)', target: 36 },
+      { id: 'single_arm_row', name: 'Single Arm Bag Row (Reps)', target: 30 },
+      { id: 'superman_hold', name: 'Superman Hold (Seconds)', target: 90 },
+      { id: 'snow_angels', name: 'Reverse Snow Angel (Reps)', target: 45 },
+      { id: 'bicep_curl', name: 'Bag Bicep Curl (Reps)', target: 36 }
     ]
-    rewards = { xp: 200, statPoints: 0, gold: 500, box: "Monarch Chest" }
+  } else if (dayOfWeek === 3) {
+    name = "WEDNESDAY QUEST: LEG HUNTER"
+    description = "Forge strong lower limb foundations, hips, and posterior chain."
+    tasksConfig = [
+      { id: 'squats', name: 'Squats (Reps)', target: 60 },
+      { id: 'lunges', name: 'Lunges (Reps, Each Leg)', target: 30 },
+      { id: 'glute_bridge', name: 'Glute Bridge (Reps)', target: 45 },
+      { id: 'wall_sit', name: 'Wall Sit (Seconds)', target: 90 },
+      { id: 'calf_raises', name: 'Calf Raises (Reps)', target: 60 }
+    ]
+  } else if (dayOfWeek === 4) {
+    name = "THURSDAY QUEST: SHOULDER + CORE"
+    description = "Improve overhead pressing mobility and deep abdominal bracing."
+    tasksConfig = [
+      { id: 'pike_pushups', name: 'Pike Pushups (Reps)', target: 30 },
+      { id: 'shoulder_press', name: 'Bag Shoulder Press (Reps)', target: 30 },
+      { id: 'lateral_raise', name: 'Bottle Lateral Raise (Reps)', target: 36 },
+      { id: 'crunches', name: 'Crunches (Reps)', target: 50 },
+      { id: 'leg_raises', name: 'Leg Raise (Reps)', target: 30 }
+    ]
+  } else if (dayOfWeek === 5) {
+    name = "FRIDAY QUEST: FULL BODY DUNGEON"
+    description = "Burn calories and test full-body endurance. Complete 3 rounds."
+    tasksConfig = [
+      { id: 'pushups', name: 'Pushups (Reps)', target: 30 },
+      { id: 'squats', name: 'Squats (Reps)', target: 30 },
+      { id: 'mountain_climbers', name: 'Mountain Climbers (Reps)', target: 60 },
+      { id: 'burpees', name: 'Burpees (Reps)', target: 20 },
+      { id: 'plank', name: 'Plank (Minutes)', target: 3 }
+    ]
+  } else if (dayOfWeek === 6) {
+    name = "SATURDAY QUEST: ACTIVE RECOVERY"
+    description = "Low-intensity mobility and posture corrections to prep for next week."
+    tasksConfig = [
+      { id: 'walking', name: 'Walking (Steps)', target: 6000 },
+      { id: 'stretching', name: 'Stretching (Minutes)', target: 15 },
+      { id: 'mobility', name: 'Mobility Exercises (Minutes)', target: 10 },
+      { id: 'posture', name: 'Posture Training (Minutes)', target: 10 }
+    ]
   }
 
   const tasks = tasksConfig.map((cfg) => {
@@ -236,7 +259,7 @@ export const getQuestForDayCount = (dayCount: number, currentTasks?: Task[]): Qu
   return {
     id: "daily_training",
     name,
-    description: "Complete the training regimen. WARNING: Failure to complete this daily quest before midnight will result in a Penalty Quest.",
+    description: description || "Complete the training regimen. WARNING: Failure to complete this daily quest before midnight will result in a Penalty Quest.",
     type: "daily",
     status: "active",
     tasks,
@@ -350,6 +373,9 @@ interface GameState {
   checkDevDailyReset: () => void
   resetSystem: () => Promise<void>
   logWorkout: (exercise: string, amount: number, xpEarned: number) => void
+  addMockInterviewSession: (session: Omit<MockInterview, 'id'>) => void
+  upgradeSkillLevel: (skillId: string) => boolean
+  updateDeveloperField: (field: 'javaProgressPercent' | 'reactProgressPercent' | 'backendProgressPercent' | 'projectsCompletedCount' | 'dsaSolved' | 'codingStreak' | 'speakingStreak' | 'confidenceXp' | 'aptitudeQuestions' | 'dailyAptitudeSolved', value: number) => void
 }
 
 // Load initial state from localstorage or use defaults
@@ -412,7 +438,14 @@ const defaultDeveloper: PlayerDeveloperQuest = {
   aptitudeQuestions: 0,
   dailyJavaMin: 0,
   dailyDsaSolved: 0,
-  dailyAptitudeSolved: 0
+  dailyAptitudeSolved: 0,
+  javaProgressPercent: 0,
+  reactProgressPercent: 0,
+  backendProgressPercent: 0,
+  projectsCompletedCount: 0,
+  speakingStreak: 0,
+  confidenceXp: 0,
+  mockInterviews: []
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -1240,6 +1273,130 @@ export const useGameStore = create<GameState>((set, get) => ({
     const updatedPlayer = {
       ...state.player,
       workoutHistory: updatedHistory
+    }
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    return { player: updatedPlayer }
+  }),
+
+  addMockInterviewSession: (session) => set((state) => {
+    const dev = state.player.developer || defaultDeveloper
+    const newSession: MockInterview = {
+      ...session,
+      id: Math.random().toString()
+    }
+    const updatedInterviews = [newSession, ...(dev.mockInterviews || [])]
+    const updatedDev = {
+      ...dev,
+      mockInterviews: updatedInterviews
+    }
+
+    const achievements = [...(updatedDev.achievements || [])]
+    if (updatedInterviews.length >= 10 && !achievements.includes('interview_hunter')) {
+      achievements.push('interview_hunter')
+    }
+    updatedDev.achievements = achievements
+
+    let newXp = dev.devXp + 100
+    let newLevel = dev.devLevel
+    let newXpNeeded = dev.devXpNeeded
+    let devLeveledUp = false
+    if (newXp >= newXpNeeded) {
+      newXp -= newXpNeeded
+      newLevel += 1
+      devLeveledUp = true
+    }
+    updatedDev.devXp = newXp
+    updatedDev.devLevel = newLevel
+    updatedDev.devXpNeeded = newXpNeeded
+    updatedDev.confidenceXp = (updatedDev.confidenceXp || 0) + 100
+
+    const updatedStats = {
+      ...state.player.stats,
+      communication: (state.player.stats.communication || 10) + 5,
+      discipline: (state.player.stats.discipline || 10) + 5
+    }
+
+    const updatedPlayer = {
+      ...state.player,
+      stats: updatedStats,
+      developer: updatedDev
+    }
+
+    localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+    return {
+      player: updatedPlayer,
+      devLevelUpNotification: devLeveledUp ? true : state.devLevelUpNotification
+    }
+  }),
+
+  upgradeSkillLevel: (skillId) => {
+    const state = get()
+    const skill = state.skills.find(s => s.id === skillId)
+    if (!skill) return false
+
+    if (!skill.unlocked) {
+      if (state.player.level < skill.requiredLevel) return false
+      if (state.player.gold < skill.cost) return false
+
+      set((state) => {
+        const updatedPlayer = { ...state.player, gold: state.player.gold - skill.cost }
+        const updatedSkills = state.skills.map((s) => s.id === skillId ? { ...s, unlocked: true, level: 1 } : s)
+        localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+        localStorage.setItem('sl_skills', JSON.stringify(updatedSkills))
+        return { player: updatedPlayer, skills: updatedSkills }
+      })
+      return true
+    } else {
+      if (skill.level >= skill.maxLevel) return false
+      const upgradeCost = skill.cost * (skill.level + 1)
+      if (state.player.gold < upgradeCost) return false
+
+      set((state) => {
+        const updatedPlayer = { ...state.player, gold: state.player.gold - upgradeCost }
+        const updatedSkills = state.skills.map((s) => s.id === skillId ? { ...s, level: s.level + 1 } : s)
+        localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
+        localStorage.setItem('sl_skills', JSON.stringify(updatedSkills))
+        return { player: updatedPlayer, skills: updatedSkills }
+      })
+      return true
+    }
+  },
+
+  updateDeveloperField: (field, value) => set((state) => {
+    const dev = state.player.developer || defaultDeveloper
+    const updatedDev = {
+      ...dev,
+      [field]: value
+    }
+
+    const achievements = [...(updatedDev.achievements || [])]
+    if ((updatedDev.reactProgressPercent || 0) >= 100 && !achievements.includes('react_hunter')) {
+      achievements.push('react_hunter')
+    }
+    if ((updatedDev.javaProgressPercent || 0) >= 100 && !achievements.includes('java_master')) {
+      achievements.push('java_master')
+    }
+    if ((updatedDev.dsaSolved || 0) >= 150 && !achievements.includes('algorithm_knight')) {
+      achievements.push('algorithm_knight')
+    }
+    if ((updatedDev.backendProgressPercent || 0) >= 100 && !achievements.includes('backend_warrior')) {
+      achievements.push('backend_warrior')
+    }
+    if ((updatedDev.speakingStreak || 0) >= 30 && !achievements.includes('communication_monarch')) {
+      achievements.push('communication_monarch')
+    }
+    if ((updatedDev.mockInterviews?.length || 0) >= 10 && !achievements.includes('interview_hunter')) {
+      achievements.push('interview_hunter')
+    }
+    const currentDay = getCurrentDayCount()
+    if (currentDay >= 90 && !achievements.includes('s_rank_monarch')) {
+      achievements.push('s_rank_monarch')
+    }
+    updatedDev.achievements = achievements
+
+    const updatedPlayer = {
+      ...state.player,
+      developer: updatedDev
     }
     localStorage.setItem('sl_player', JSON.stringify(updatedPlayer))
     return { player: updatedPlayer }
