@@ -162,7 +162,7 @@ export interface Dungeon {
 }
 
 export const getCurrentDayCount = (): number => {
-  const startDate = new Date('2026-06-21T00:00:00')
+  const startDate = new Date('2026-06-26T00:00:00')
   const today = new Date()
   const diffTime = today.getTime() - startDate.getTime()
   return Math.max(1, Math.min(90, Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1))

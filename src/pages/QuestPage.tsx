@@ -24,8 +24,8 @@ export const QuestPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'body' | 'developer' | 'communication' | 'interview'>('body')
 
   // Timeline calculation
-  const startDate = new Date('2026-06-21T00:00:00')
-  const endDate = new Date('2026-09-18T23:59:59')
+  const startDate = new Date('2026-06-26T00:00:00')
+  const endDate = new Date('2026-09-23T23:59:59')
   const today = new Date()
   const diffTime = today.getTime() - startDate.getTime()
   const currentDay = Math.max(1, Math.min(90, Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1))
@@ -248,7 +248,7 @@ export const QuestPage: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-slate-950/40 border border-slate-900/60 p-3 rounded text-center">
               <span className="text-[9px] text-slate-500 font-bold block uppercase tracking-wider mb-1">Start Date</span>
-              <span className="font-display text-xs text-slate-300 font-black">21 Jun 2026</span>
+              <span className="font-display text-xs text-slate-300 font-black">26 Jun 2026</span>
             </div>
             <div className="bg-slate-950/40 border border-slate-900/60 p-3 rounded text-center border-l-2 border-l-hunter-blue/40">
               <span className="text-[9px] text-slate-500 font-bold block uppercase tracking-wider mb-1">Current Day</span>
@@ -256,7 +256,7 @@ export const QuestPage: React.FC = () => {
             </div>
             <div className="bg-slate-950/40 border border-slate-900/60 p-3 rounded text-center">
               <span className="text-[9px] text-slate-500 font-bold block uppercase tracking-wider mb-1">Deadline Date</span>
-              <span className="font-display text-xs text-slate-300 font-black">18 Sep 2026</span>
+              <span className="font-display text-xs text-slate-300 font-black">23 Sep 2026</span>
             </div>
             <div className="bg-slate-950/40 border border-slate-900/60 p-3 rounded text-center border-l-2 border-l-hunter-purple/40">
               <span className="text-[9px] text-slate-500 font-bold block uppercase tracking-wider mb-1">Remaining Time</span>
